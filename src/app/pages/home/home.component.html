@@ -1,0 +1,627 @@
+<style>
+    /* ── Primary gradient button ── */
+    .btn-grd-primary, .btn-grd.btn-grd-primary {
+      background: linear-gradient(135deg, #377CF4, #2E3F8F) !important;
+      border: none !important; color: #fff !important;
+    }
+    .btn-grd-primary:hover { background: linear-gradient(135deg, #2E6BE0, #26336F)!important; }
+
+    /* ── Success gradient button ── */
+    .btn-grd-success, .btn-grd.btn-grd-success {
+      background: linear-gradient(135deg,#16a34a,#22c55e)!important;
+      border:none!important; color:#fff!important;
+    }
+    .btn-grd-success:hover { background: linear-gradient(135deg,#15803d,#16a34a)!important; }
+
+    /* ── Danger gradient button ── */
+    .btn-grd-danger, .btn-grd.btn-grd-danger {
+      background: linear-gradient(135deg,#dc2626,#ef4444)!important;
+      border:none!important; color:#fff!important;
+    }
+
+    /* ── Warning gradient button ── */
+    .btn-grd-warning, .btn-grd.btn-grd-warning {
+      background: linear-gradient(135deg,#d97706,#f59e0b)!important;
+      border:none!important; color:#fff!important;
+    }
+
+    /* ── Info gradient button ── */
+    .btn-grd-info, .btn-grd.btn-grd-info {
+      background: linear-gradient(135deg,#0891b2,#06b6d4)!important;
+      border:none!important; color:#fff!important;
+    }
+
+    /* ── Outline buttons consistent border/text color ── */
+    .btn-outline-primary { border-color:#2E3F8F!important; color:#2E3F8F!important; }
+    .btn-outline-primary:hover { background:#2E3F8F!important; color:#fff!important; }
+    .btn-outline-success { border-color:#22c55e!important; color:#22c55e!important; }
+    .btn-outline-success:hover { background:#22c55e!important; color:#fff!important; }
+    .btn-outline-danger  { border-color:#ef4444!important; color:#ef4444!important; }
+    .btn-outline-danger:hover  { background:#ef4444!important; color:#fff!important; }
+    .btn-outline-warning { border-color:#f59e0b!important; color:#f59e0b!important; }
+    .btn-outline-warning:hover { background:#f59e0b!important; color:#fff!important; }
+    .btn-outline-info    { border-color:#06b6d4!important; color:#06b6d4!important; }
+    .btn-outline-info:hover    { background:#06b6d4!important; color:#fff!important; }
+
+    /* ── Badge soft colors ── */
+    .badge.bg-primary.bg-opacity-10 { background:rgba(55,124,244,.12)!important; }
+    .badge.bg-success.bg-opacity-10 { background:rgba(34,197,94,.12)!important; }
+    .badge.bg-danger.bg-opacity-10  { background:rgba(239,68,68,.12)!important; }
+    .badge.bg-warning.bg-opacity-10 { background:rgba(245,158,11,.12)!important; }
+    .badge.bg-info.bg-opacity-10    { background:rgba(6,182,212,.12)!important; }
+    .badge.bg-danger.bg-opacity-15  { background:rgba(239,68,68,.15)!important; }
+    .badge.bg-success.bg-opacity-15 { background:rgba(34,197,94,.15)!important; }
+
+    /* ── Sidebar active link ── */
+    .fb-nav-link.active {
+      background: linear-gradient(135deg, #377CF4, #2E3F8F) !important;
+      color: white !important;
+      box-shadow: 0 4px 16px rgba(55,124,244,.3) !important;
+    }
+
+    /* ── Card icon gradient helpers ── */
+    .bg-grd-primary  { background: linear-gradient(135deg,#377CF4,#2E3F8F)!important; }
+    .bg-grd-success  { background: linear-gradient(135deg,#16a34a,#22c55e)!important; }
+    .bg-grd-danger   { background: linear-gradient(135deg,#dc2626,#ef4444)!important; }
+    .bg-grd-warning  { background: linear-gradient(135deg,#d97706,#f59e0b)!important; }
+    .bg-grd-info     { background: linear-gradient(135deg,#0891b2,#06b6d4)!important; }
+
+    /* ── KPI cards clickable hover ── */
+    .kpi-card-hover {
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .kpi-card-hover:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.18) !important;
+    }
+  </style>
+
+    
+      <!--breadcrumb-->
+      <style>
+        /* Dynamic month/year pill displayed at the top-right of the page. */
+        .page-month-pill {
+          display: inline-block;
+          padding: 6px 18px;
+          font-size: 13px;
+          font-weight: 600;
+          color: #2E3F8F;
+          background: rgba(55,124,244, 0.12);
+          border: 1px solid rgba(55,124,244, 0.28);
+          border-radius: 999px;
+          letter-spacing: 0.2px;
+        }
+      </style>
+      <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
+        <div class="breadcrumb-title pe-3">Bonjour famille {{ familleName }}</div>
+        <div class="ms-auto">
+          <span class="page-month-pill">{{ currentMonthLabel }} {{ currentYear }}</span>
+        </div>
+      </div>
+      <!--end breadcrumb-->
+     
+      <!-- ═══════════════════════════════════════════════════
+           FAMILYBALANCE – DASHBOARD CONTENT
+           ═══════════════════════════════════════════════════ -->
+
+      <!-- ── Dashboard styles ── -->
+      <style>
+        /* ── Reste à vivre hero card — mobile palette gradient (blue → violet) ── */
+        .rav-card {
+          background: linear-gradient(135deg, #377CF4 0%, #2E3F8F 100%) !important;
+          border: none !important;
+          box-shadow: 0 10px 32px rgba(55,124,244,0.45), 0 8px 24px rgba(46,63,143,0.25) !important;
+        }
+
+        .rav-label {
+          font-size: 13px;
+          font-weight: 600;
+          color: rgba(255,255,255,0.92);
+          margin-bottom: 10px;
+        }
+        .rav-budget-pill {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 6px 14px;
+          font-size: 12.5px;
+          font-weight: 600;
+          color: #fff;
+          background: rgba(255,255,255,0.18);
+          border: 1px solid rgba(255,255,255,0.25);
+          border-radius: 999px;
+          backdrop-filter: blur(6px);
+          white-space: nowrap;
+        }
+        .rav-budget-pill .material-icons-outlined {
+          font-size: 15px;
+        }
+        /* Carry-over line stacked directly under the Budget pill, right-aligned. */
+        .rav-budget-info {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-end;
+          gap: 6px;
+        }
+        .rav-carry-line {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 5px 12px;
+          font-size: 12px;
+          font-weight: 600;
+          color: #fde68a;
+          background: rgba(255,255,255,0.12);
+          border: 1px solid rgba(255,255,255,0.22);
+          border-radius: 999px;
+          backdrop-filter: blur(6px);
+          white-space: nowrap;
+          letter-spacing: 0.2px;
+        }
+
+        .rav-amount {
+          font-size: 34px;
+          font-weight: 800;
+          line-height: 1.05;
+          letter-spacing: -1px;
+          color: #fff;
+          margin-bottom: 4px;
+        }
+        .rav-amount .rav-unit {
+          font-size: 22px;
+          font-weight: 600;
+          margin-left: 5px;
+          color: rgba(255,255,255,0.85);
+          vertical-align: middle;
+        }
+        .rav-subtotal {
+          font-size: 12.5px;
+          font-weight: 500;
+          color: rgba(255,255,255,0.7);
+          margin-bottom: 14px;
+        }
+
+        /* ── Progress block ── */
+        .rav-prog-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          font-size: 12.5px;
+          color: rgba(255,255,255,0.85);
+          margin-bottom: 8px;
+          font-weight: 600;
+          letter-spacing: 0.2px;
+        }
+        .rav-prog-row .rav-pct { color: #fff; font-weight: 800; font-size: 14px; }
+        .rav-prog-track {
+          height: 10px;
+          background: rgba(255,255,255,0.18);
+          border-radius: 20px;
+          overflow: hidden;
+          position: relative;
+        }
+        .rav-prog-fill {
+          height: 100%;
+          background: linear-gradient(90deg, #fbbf24, #f59e0b, #ef4444);
+          border-radius: 20px;
+          box-shadow: 0 0 14px rgba(251,191,36,0.55);
+          transition: width 0.8s cubic-bezier(.4,0,.2,1);
+        }
+        .rav-scale-row {
+          display: flex;
+          justify-content: space-between;
+          margin-top: 6px;
+          font-size: 11.5px;
+          font-weight: 600;
+          color: rgba(255,255,255,0.7);
+        }
+        .rav-carry-hint {
+          display: inline-block;
+          margin-left: 6px;
+          color: #fde68a;
+          font-weight: 600;
+        }
+        .rav-exhausted {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          margin-top: 12px;
+          padding: 8px 12px;
+          font-size: 12.5px;
+          font-weight: 600;
+          color: #fff;
+          background: rgba(239,68,68,0.25);
+          border: 1px solid rgba(239,68,68,0.45);
+          border-radius: 10px;
+        }
+        .rav-exhausted .material-icons-outlined { font-size: 16px; }
+      </style>
+
+      <!-- ═══ Row 1 : Reste à vivre ═══ -->
+      <div class="row" style="margin-bottom:2rem;">
+        <div class="col-12">
+          <div class="card w-100 rounded-4 overflow-hidden rav-card">
+            <div class="card-body" style="padding: 1.25rem 1.6rem;">
+              <div class="d-flex justify-content-between align-items-start" style="gap:12px;">
+                <div class="rav-label">Reste à vivre</div>
+                <div class="rav-budget-info">
+                  <!-- Budget total affiché = base saisie par l'admin + report
+                       transféré lors de la dernière modification du budget.
+                       La sous-pill "+ X DT report" détaille la part de ce
+                       total qui vient du reste à vivre non consommé. -->
+                  <div class="rav-budget-pill">
+                    <span class="material-icons-outlined">account_balance_wallet</span>
+                    Budget : {{ myBudget + myCarryover | number:'1.0-0' }} DT
+                  </div>
+                  <div class="rav-carry-line">
+                    + {{ myCarryover | number:'1.0-0' }} DT report du mois dernier
+                  </div>
+                </div>
+              </div>
+
+              <!-- Reste à vivre = budget total restant (= base + report − dépenses). -->
+              <div class="rav-amount">{{ restAvivreFromBudget | number:'1.0-0' }}<span class="rav-unit">DT</span></div>
+              <div class="rav-subtotal">
+                sur {{ myBudget + myCarryover | number:'1.0-0' }} DT budget total
+              </div>
+
+              <div class="rav-prog-row">
+                <span>Utilisation budget</span>
+                <span class="rav-pct">{{ budgetUsagePct | number:'1.0-1' }}%</span>
+              </div>
+              <div class="rav-prog-track">
+                <div class="rav-prog-fill" [style.width.%]="budgetUsagePct"></div>
+              </div>
+              <div class="rav-scale-row">
+                <span>{{ myDepensesMois | number:'1.0-0' }} DT</span>
+                <span>{{ myBudget + myCarryover | number:'1.0-0' }} DT</span>
+              </div>
+              <div *ngIf="myBudgetExhausted" class="rav-exhausted">
+                <span class="material-icons-outlined">lock</span>
+                Budget épuisé : impossible d'ajouter une nouvelle opération ce mois-ci.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ Row 2 : Tes Revenus & Tes Charges ═══ -->
+      <style>
+        /* Period toggle pill replicating the React Dashboard "mois / année"
+           button next to each Tes Revenus / Tes Dépenses headline. */
+        .period-toggle {
+          border: none;
+          border-radius: 999px;
+          padding: 5px 14px;
+          cursor: pointer;
+          font-size: 13px;
+          font-weight: 700;
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          line-height: 1.4;
+        }
+        .period-toggle .bi { font-size: 10px; }
+        .period-toggle.rev { background: rgba(22,163,74,0.15); color: #15803d; }
+        .period-toggle.rev:hover { background: rgba(22,163,74,0.25); }
+        .period-toggle.dep { background: rgba(220,38,38,0.15); color: #dc2626; }
+        .period-toggle.dep:hover { background: rgba(220,38,38,0.25); }
+
+        /* Mobile-style double-layer icon — 1:1 port of the React mobile
+           Dashboard markup at Dashboard.jsx:1983-1986 / :2015-2018:
+             outer .avatar.avatar-40 .p-1 .rounded-3 .bg-theme-1-subtle .theme-green/red
+               └ inner .icons.avatar.avatar-32 .bg-theme-1 .text-white .rounded-3
+                   └ <i class="bi bi-arrow-{down-left|up-right} fs-6">
+           AdminUIUX theme-1 palette: green=#08a046, red=#c80036.
+           bg-theme-1-subtle = rgba(theme-1, .1). p-1 = 4px. rounded-3 = 8px.
+           fs-6 = 1rem = 16px. */
+        .kpi-mobile-icon {
+          width: 40px; height: 40px;
+          padding: 4px;
+          display: inline-flex; align-items: center; justify-content: center;
+          border-radius: 12px;
+          flex-shrink: 0;
+        }
+        .kpi-mobile-icon .kpi-icon-inner {
+          width: 32px; height: 32px;
+          display: inline-flex; align-items: center; justify-content: center;
+          border-radius: 12px;
+          color: #fff;
+        }
+        .kpi-mobile-icon .kpi-icon-inner .bi { font-size: 16px; line-height: 1; }
+        .kpi-mobile-icon.rev { background: rgba(8,160,70,0.10); }
+        .kpi-mobile-icon.rev .kpi-icon-inner { background: #08a046; }
+        .kpi-mobile-icon.dep { background: rgba(200,0,54,0.10); }
+        .kpi-mobile-icon.dep .kpi-icon-inner { background: #c80036; }
+      </style>
+      <div class="row g-3" style="margin-bottom:2rem;">
+
+        <!-- Revenus -->
+        <div class="col-6 d-flex align-items-stretch">
+          <div class="card w-100 rounded-4 h-100 kpi-card-hover">
+            <div class="card-body py-4 px-4">
+              <div class="d-flex align-items-center gap-2 mb-3">
+                <div class="kpi-mobile-icon rev">
+                  <span class="kpi-icon-inner">
+                    <i class="bi bi-arrow-down-left"></i>
+                  </span>
+                </div>
+                <button type="button"
+                        class="period-toggle rev ms-auto"
+                        (click)="togglePeriodRev()"
+                        title="Changer la période">
+                  <i class="bi bi-caret-up-fill"></i>
+                  {{ periodRev === 'mois' ? 'mois' : currentYear }}
+                </button>
+              </div>
+              <p class="text-secondary mb-1" style="font-size:15px;font-weight:600;">
+                Revenus {{ periodRev === 'mois' ? 'ce mois' : currentYear }}
+              </p>
+              <h4 class="mb-0 fw-bold" style="font-size:26px;letter-spacing:-0.4px;">
+                {{ (periodRev === 'mois' ? myRevenusMois : myRevenusAnnee) | number:'1.0-0' }}
+                <span class="text-secondary" style="font-size:14px;font-weight:500;">DT</span>
+              </h4>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dépenses (charges + factures) -->
+        <div class="col-6 d-flex align-items-stretch">
+          <div class="card w-100 rounded-4 h-100 kpi-card-hover">
+            <div class="card-body py-4 px-4">
+              <div class="d-flex align-items-center gap-2 mb-3">
+                <div class="kpi-mobile-icon dep">
+                  <span class="kpi-icon-inner">
+                    <i class="bi bi-arrow-up-right"></i>
+                  </span>
+                </div>
+                <button type="button"
+                        class="period-toggle dep ms-auto"
+                        (click)="togglePeriodDep()"
+                        title="Changer la période">
+                  <i class="bi bi-caret-up-fill"></i>
+                  {{ periodDep === 'mois' ? 'mois' : currentYear }}
+                </button>
+              </div>
+              <p class="text-secondary mb-1" style="font-size:15px;font-weight:600;">
+                Dépenses {{ periodDep === 'mois' ? 'ce mois' : currentYear }}
+              </p>
+              <h4 class="mb-0 fw-bold" style="font-size:26px;letter-spacing:-0.4px;">
+                {{ (periodDep === 'mois' ? myDepensesMois : myDepensesAnnee) | number:'1.0-0' }}
+                <span class="text-secondary" style="font-size:14px;font-weight:500;">DT</span>
+              </h4>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ═══ Actions rapides — quick-launch cards above the KPI row ═══ -->
+      <style>
+        .quick-actions-section { margin-bottom: 1.5rem; }
+        .quick-actions-title {
+          display: flex; align-items: center; gap: 8px;
+          font-size: 16px; font-weight: 700;
+          color: var(--bs-body-color);
+          margin: 0 0 12px;
+        }
+        .quick-actions-title .material-icons-outlined {
+          color: #f59e0b; font-size: 20px;
+        }
+        .quick-actions-grid {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 14px;
+        }
+        @media (max-width: 720px) { .quick-actions-grid { grid-template-columns: 1fr; } }
+        .quick-action {
+          display: flex; align-items: center; gap: 14px;
+          padding: 14px 18px;
+          border-radius: 16px;
+          background: var(--bs-body-bg);
+          border: 1px solid var(--bs-border-color);
+          text-decoration: none;
+          color: inherit;
+          transition: transform .2s, box-shadow .2s, border-color .2s;
+        }
+        .quick-action:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+        }
+        .quick-action-icon {
+          width: 40px; height: 40px;
+          display: flex; align-items: center; justify-content: center;
+          border-radius: 12px; color: #fff;
+          flex-shrink: 0;
+        }
+        .quick-action-icon .material-icons-outlined { font-size: 22px; }
+        .quick-action-label { font-size: 14px; font-weight: 600; }
+        .quick-action-revenu .quick-action-icon {
+          background: linear-gradient(135deg, #10b981, #22c55e);
+          box-shadow: 0 6px 14px rgba(34,197,94,0.3);
+        }
+        .quick-action-revenu:hover  { border-color: rgba(34,197,94,0.4); }
+        .quick-action-charge .quick-action-icon {
+          background: linear-gradient(135deg, #dc2626, #ef4444);
+          box-shadow: 0 6px 14px rgba(239,68,68,0.3);
+        }
+        .quick-action-charge:hover  { border-color: rgba(239,68,68,0.4); }
+        .quick-action-facture .quick-action-icon {
+          background: linear-gradient(135deg, #0891b2, #06b6d4);
+          box-shadow: 0 6px 14px rgba(6,182,212,0.3);
+        }
+        .quick-action-facture:hover { border-color: rgba(6,182,212,0.4); }
+      </style>
+
+      <div class="quick-actions-section">
+        <p class="quick-actions-title">
+          <span class="material-icons-outlined">flash_on</span>
+          Actions rapides
+        </p>
+      </div>
+
+      <!-- ═══ Premium KPI cards ═══ -->
+      <style>
+        .kpi-row {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 18px;
+          margin-top: 0;
+        }
+        @media (max-width: 992px) { .kpi-row { grid-template-columns: 1fr 1fr; } }
+        @media (max-width: 600px) { .kpi-row { grid-template-columns: 1fr; } }
+
+        .kpi-card {
+          position: relative;
+          display: flex;
+          flex-direction: column;
+          gap: 22px;
+          min-height: 196px;
+          padding: 22px 24px;
+          border-radius: 22px;
+          background: var(--bs-body-bg);
+          border: 1px solid var(--bs-border-color);
+          box-shadow: 0 2px 14px rgba(0,0,0,0.06);
+          transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+          overflow: hidden;
+          text-decoration: none;
+          color: inherit;
+        }
+        /* Subtle radial glow in the corner, accent-coloured per card. */
+        .kpi-card::before {
+          content: ''; position: absolute; inset: 0;
+          background: radial-gradient(circle at top right, var(--accent-glow), transparent 65%);
+          pointer-events: none;
+          opacity: 0.55;
+          transition: opacity .25s ease;
+        }
+        .kpi-card:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 14px 38px rgba(0,0,0,0.12),
+                      0 0 0 1px var(--accent-border);
+          border-color: var(--accent-border);
+        }
+        .kpi-card:hover::before { opacity: 0.9; }
+
+        .kpi-head {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          position: relative;
+          z-index: 1;
+        }
+        .kpi-icon {
+          width: 52px; height: 52px;
+          border-radius: 16px;
+          display: flex; align-items: center; justify-content: center;
+          color: #fff;
+          background: var(--accent-gradient);
+          box-shadow: 0 6px 18px var(--accent-shadow);
+        }
+        .kpi-icon .material-icons-outlined { font-size: 24px; }
+
+        .kpi-trend {
+          display: inline-flex; align-items: center; gap: 4px;
+          padding: 6px 12px;
+          border-radius: 999px;
+          font-size: 11.5px; font-weight: 700;
+          letter-spacing: 0.2px;
+          white-space: nowrap;
+        }
+        .kpi-trend.up   { background: rgba(34,197,94,0.14);  color: #22c55e; }
+        .kpi-trend.down { background: rgba(239,68,68,0.14);  color: #ef4444; }
+        .kpi-trend.neutral { background: rgba(148,163,184,0.14); color: #94a3b8; }
+
+        .kpi-body {
+          display: flex; flex-direction: column; gap: 6px;
+          position: relative; z-index: 1;
+          margin-top: auto;
+        }
+        .kpi-label {
+          margin: 0;
+          font-size: 12px; font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 1.1px;
+          color: var(--bs-body-color);
+          opacity: 0.6;
+        }
+        .kpi-value {
+          margin: 0;
+          font-size: 30px; font-weight: 800;
+          letter-spacing: -0.6px;
+          line-height: 1.1;
+          color: var(--accent-color);
+        }
+        .kpi-value .kpi-unit {
+          font-size: 14px; font-weight: 600;
+          color: var(--bs-body-color); opacity: 0.55;
+          margin-left: 6px; letter-spacing: 0;
+        }
+        .kpi-value .kpi-secondary {
+          font-size: 13px; font-weight: 600;
+          color: var(--bs-body-color); opacity: 0.55;
+          margin-left: 8px; letter-spacing: 0;
+        }
+
+        /* Per-card accent palette */
+        .kpi-card.kpi-revenus {
+          --accent-gradient: linear-gradient(135deg, #10b981, #22c55e);
+          --accent-color: #22c55e;
+          --accent-shadow: rgba(34,197,94,0.35);
+          --accent-glow: rgba(34,197,94,0.18);
+          --accent-border: rgba(34,197,94,0.35);
+        }
+        .kpi-card.kpi-charges {
+          --accent-gradient: linear-gradient(135deg, #dc2626, #ef4444);
+          --accent-color: #ef4444;
+          --accent-shadow: rgba(239,68,68,0.35);
+          --accent-glow: rgba(239,68,68,0.18);
+          --accent-border: rgba(239,68,68,0.35);
+        }
+        .kpi-card.kpi-factures {
+          --accent-gradient: linear-gradient(135deg, #0891b2, #06b6d4);
+          --accent-color: #06b6d4;
+          --accent-shadow: rgba(6,182,212,0.35);
+          --accent-glow: rgba(6,182,212,0.18);
+          --accent-border: rgba(6,182,212,0.35);
+        }
+      </style>
+
+      <div class="kpi-row">
+        <a routerLink="/revenus" class="kpi-card kpi-revenus">
+          <div class="kpi-head">
+            <div class="kpi-icon"><span class="material-icons-outlined">trending_up</span></div>
+          </div>
+          <div class="kpi-body">
+            <p class="kpi-label">Revenus du mois</p>
+            <h3 class="kpi-value">
+              {{ totalRevenuMois | number:'1.0-0' }}<span class="kpi-unit">DT</span>
+            </h3>
+          </div>
+        </a>
+
+        <a routerLink="/charges" class="kpi-card kpi-charges">
+          <div class="kpi-head">
+            <div class="kpi-icon"><span class="material-icons-outlined">credit_card</span></div>
+          </div>
+          <div class="kpi-body">
+            <p class="kpi-label">Charges du mois</p>
+            <h3 class="kpi-value">
+              {{ totalChargesMois | number:'1.0-0' }}<span class="kpi-unit">DT</span>
+            </h3>
+          </div>
+        </a>
+
+        <a routerLink="/factures" class="kpi-card kpi-factures">
+          <div class="kpi-head">
+            <div class="kpi-icon"><span class="material-icons-outlined">receipt_long</span></div>
+          </div>
+          <div class="kpi-body">
+            <p class="kpi-label">Factures du mois</p>
+            <h3 class="kpi-value">
+              {{ totalFacturesMois | number:'1.0-0' }}<span class="kpi-unit">DT</span>
+            </h3>
+          </div>
+        </a>
+      </div>
+

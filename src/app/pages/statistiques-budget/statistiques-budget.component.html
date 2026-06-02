@@ -1,0 +1,154 @@
+<style>
+    /* ══ Stats Budget — same shell as the other stats pages ══ */
+    .stats-page-header {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 16px; flex-wrap: wrap; margin: -4px 0 18px;
+    }
+    .stats-page-header h3 {
+      font-size: 24px; font-weight: 800; margin: 0 0 2px; letter-spacing: -0.3px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .stats-page-header .subtitle { font-size: 13px; color: #000000; margin: 0; opacity: 0.85; }
+
+    /* ── Mois + Année picker pills (mint, shared across all stats pages) ── */
+    .period-pills { display: inline-flex; gap: 8px; align-items: center; flex-shrink: 0; }
+    .period-pill {
+      position: relative; display: inline-flex; align-items: center;
+      gap: 4px; padding: 6px 14px; border-radius: 999px;
+      border: 1.5px solid #34d399; background: #ecfdf5; color: #10b981;
+      font-size: 12.5px; font-weight: 700; letter-spacing: 0.2px;
+      cursor: pointer; transition: all .15s;
+      min-width: 84px; justify-content: center; user-select: none;
+    }
+
+    /* ── Année : champ stepper (input number, flèches up/down) ── */
+    .period-pill-year { padding: 2px 4px 2px 10px; cursor: text; }
+    .period-year-input {
+      border: none; background: transparent; outline: none;
+      font: inherit; color: inherit; letter-spacing: inherit;
+      width: 100%; text-align: center; padding: 0; margin: 0;
+    }
+    /* garder les flèches natives visibles (Chrome/Edge/WebKit) */
+    .period-year-input::-webkit-outer-spin-button,
+    .period-year-input::-webkit-inner-spin-button {
+      -webkit-appearance: inner-spin-button; opacity: 1; height: 22px;
+    }
+
+    /* Title-and-pickers row inside each chart card header. */
+    .card-header-row {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 10px; flex-wrap: wrap;
+    }
+    .card-header-row .chart-title { margin: 0; flex: 1 1 auto; min-width: 0; }
+    .period-pill:hover { background: #d1fae5; border-color: #10b981; }
+    .period-pill .caret { font-size: 16px; margin-left: 2px; margin-right: -4px; }
+    .period-menu {
+      position: absolute; top: 110%; left: 0; right: 0; margin: 0;
+      padding: 4px; list-style: none; background: #fff;
+      border: 1px solid #d1fae5; border-radius: 14px;
+      box-shadow: 0 8px 24px rgba(16,185,129,0.18);
+      z-index: 50; max-height: 280px; overflow-y: auto;
+    }
+    .period-menu li {
+      padding: 7px 12px; border-radius: 8px;
+      font-size: 13px; font-weight: 600; color: #334155;
+      cursor: pointer; text-align: center;
+    }
+    .period-menu li:hover { background: #ecfdf5; color: #10b981; }
+    .period-menu li.active {
+      background: linear-gradient(135deg, #10b981, #34d399); color: #fff;
+    }
+
+    /* Chart cards */
+    .chart-card {
+      background: var(--bs-body-bg); border: 1px solid var(--bs-border-color);
+      border-radius: 18px; box-shadow: 0 2px 14px rgba(0,0,0,0.05);
+      transition: box-shadow .2s;
+    }
+    .chart-card:hover { box-shadow: 0 8px 28px rgba(0,0,0,0.08); }
+    .chart-card .card-header {
+      background: transparent; border-bottom: 1px solid var(--bs-border-color);
+      padding: 18px 22px 14px;
+    }
+    .chart-title { font-size: 15px; font-weight: 700; margin: 0; letter-spacing: -0.2px; }
+    .chart-subtitle { font-size: 12px; opacity: 0.6; margin: 2px 0 0; }
+  </style>
+
+  <!-- ── PAGE HEADER + line-chart picker (top-right) ── -->
+  <div class="stats-page-header">
+    <div>
+      <h3>
+        <span class="material-icons-outlined" style="font-size:24px;color:#2E3F8F;">trending_up</span>
+        Statistiques Budget
+      </h3>
+      <p class="subtitle">Analyse de l'évolution et de la répartition du budget</p>
+    </div>
+  </div>
+
+  <!-- ══ ROW 1 : Budget vs Dépenses par Membre — own picker ══ -->
+  <div class="row g-3 mb-3">
+    <div class="col-12">
+      <div class="card chart-card">
+        <div class="card-header">
+          <div class="card-header-row">
+            <p class="chart-title">Budget vs Dépenses par Membre</p>
+            <div class="period-pills">
+              <div class="period-pill" (click)="toggleMonthMenu('bars', $event)">
+                <span>{{ monthLabel(anchors.bars.month) }}</span>
+                <span class="material-icons-outlined caret">expand_more</span>
+                <ul class="period-menu" *ngIf="anchors.bars.monthOpen" (click)="$event.stopPropagation()">
+                  <li *ngFor="let m of months" [class.active]="m.value === anchors.bars.month"
+                      (click)="setMonth('bars', m.value, $event)">{{ m.label }}</li>
+                </ul>
+              </div>
+              <div class="period-pill period-pill-year">
+                <input type="number" class="period-year-input"
+                       inputmode="numeric" min="1900" max="2999" step="1"
+                       [value]="anchors.bars.year"
+                       (click)="$event.stopPropagation()"
+                       (input)="setYearFromInput('bars', $any($event.target).value)">
+              </div>
+            </div>
+          </div>
+          <p class="chart-subtitle">{{ monthLabel(anchors.bars.month) }} {{ anchors.bars.year }} · Dépenses = Charges + Factures</p>
+        </div>
+        <div class="card-body pt-0">
+          <div id="bdg-vs-spent"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ ROW 3 : Répartition du Budget par Membre — own picker ══ -->
+  <div class="row g-3">
+    <div class="col-12">
+      <div class="card chart-card">
+        <div class="card-header">
+          <div class="card-header-row">
+            <p class="chart-title">Répartition du Budget par Membre</p>
+            <div class="period-pills">
+              <div class="period-pill" (click)="toggleMonthMenu('share', $event)">
+                <span>{{ monthLabel(anchors.share.month) }}</span>
+                <span class="material-icons-outlined caret">expand_more</span>
+                <ul class="period-menu" *ngIf="anchors.share.monthOpen" (click)="$event.stopPropagation()">
+                  <li *ngFor="let m of months" [class.active]="m.value === anchors.share.month"
+                      (click)="setMonth('share', m.value, $event)">{{ m.label }}</li>
+                </ul>
+              </div>
+              <div class="period-pill period-pill-year">
+                <input type="number" class="period-year-input"
+                       inputmode="numeric" min="1900" max="2999" step="1"
+                       [value]="anchors.share.year"
+                       (click)="$event.stopPropagation()"
+                       (input)="setYearFromInput('share', $any($event.target).value)">
+              </div>
+            </div>
+          </div>
+          <p class="chart-subtitle">Part du budget familial alloué à chaque membre · {{ monthLabel(anchors.share.month) }} {{ anchors.share.year }}</p>
+        </div>
+        <div class="card-body pt-0">
+          <div id="bdg-share"></div>
+        </div>
+      </div>
+    </div>
+  </div>

@@ -1,0 +1,833 @@
+<style>
+    /* ══ SHARED SYSTEM ══ */
+    .btn-grd-primary,.btn-grd.btn-grd-primary{background:linear-gradient(135deg,#377CF4,#2E3F8F)!important;border:none!important;color:#fff!important;}
+    .btn-grd-success,.btn-grd.btn-grd-success{background:linear-gradient(135deg,#16a34a,#22c55e)!important;border:none!important;color:#fff!important;}
+    .btn-grd-danger,.btn-grd.btn-grd-danger{background:linear-gradient(135deg,#dc2626,#ef4444)!important;border:none!important;color:#fff!important;}
+    .btn-grd-warning,.btn-grd.btn-grd-warning{background:linear-gradient(135deg,#d97706,#f59e0b)!important;border:none!important;color:#fff!important;}
+    .btn-grd-purple,.btn-grd.btn-grd-purple{background:linear-gradient(135deg,#7c3aed,#a855f7)!important;border:none!important;color:#fff!important;}
+    .bg-grd-purple{background:linear-gradient(135deg,#7c3aed,#a855f7)!important;}
+    .bg-grd-success{background:linear-gradient(135deg,#16a34a,#22c55e)!important;}
+    .bg-grd-warning{background:linear-gradient(135deg,#d97706,#f59e0b)!important;}
+    .bg-grd-danger{background:linear-gradient(135deg,#dc2626,#ef4444)!important;}
+
+    /* ══ KPI CARDS — top accent like charges/revenus ══ */
+    .kpi-card {
+      background:var(--bs-body-bg); border:1px solid var(--bs-border-color);
+      border-radius:16px; padding:16px 18px; box-shadow:0 2px 10px rgba(0,0,0,0.04);
+      position:relative; overflow:hidden; transition:transform .2s, box-shadow .2s;
+    }
+    .kpi-card:hover { transform:translateY(-3px); box-shadow:0 8px 24px rgba(0,0,0,0.15); }
+    .kpi-card::after { content:''; position:absolute; top:0; left:0; right:0; height:3px; }
+    .kpi-card.kpi-purple::after { background:linear-gradient(90deg,#7c3aed,#a855f7); }
+    .kpi-card.kpi-green::after  { background:linear-gradient(90deg,#16a34a,#22c55e); }
+    .kpi-card.kpi-orange::after { background:linear-gradient(90deg,#d97706,#f59e0b); }
+    .kpi-card.kpi-red::after    { background:linear-gradient(90deg,#dc2626,#ef4444); }
+    .kpi-icon { width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; color:#fff; flex-shrink:0; }
+    .kpi-icon .material-icons-outlined { font-size:22px; }
+    .kpi-label { font-size:11.5px; font-weight:600; letter-spacing:0.3px; text-transform:uppercase; opacity:0.7; }
+    .kpi-value { font-size:20px; font-weight:800; letter-spacing:-0.3px; }
+    .kpi-progress { height:6px; background:rgba(148,163,184,0.15); border-radius:99px; overflow:hidden; }
+    .kpi-progress .fill { height:100%; border-radius:99px; transition:width 0.6s ease; }
+    .kpi-sub { font-size:11.5px; opacity:0.6; }
+
+    /* ══ PAGE HEADER ══ */
+    .fct-page-header { display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:20px; margin-top:-4px; }
+    .fct-page-header h3 { font-size:26px; font-weight:800; margin:0 0 4px; letter-spacing:-0.3px; display:flex; align-items:center; gap:6px; }
+    .fct-page-header .subtitle { font-size:13.5px; color:#000000; margin:0; }
+
+    /* ══ TABLE CARD ══ */
+    .fct-table-card { background:var(--bs-body-bg); border:1px solid var(--bs-border-color); border-radius:18px; overflow:visible; box-shadow:0 2px 14px rgba(0,0,0,0.05); }
+    .fct-table-header { display:flex; align-items:center; gap:12px; padding:16px 24px; border-bottom:1px solid var(--bs-border-color); }
+    .fct-table-header h6 { font-size:15px; font-weight:700; margin:0; }
+
+    /* ── New top-of-table header (title + dynamic count badge) ── */
+    .list-header {
+      padding: 18px 24px 14px;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px; flex-wrap: wrap;
+    }
+    .list-title {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 16px; font-weight: 700;
+      color: var(--bs-body-color);
+    }
+    .list-title-icon { font-size: 22px; opacity: 0.85; color: #8b5cf6; }
+    .list-count-badge {
+      display: inline-block; padding: 5px 14px;
+      font-size: 12px; font-weight: 700;
+      color: #8b5cf6;
+      background: rgba(139, 92, 246, 0.14);
+      border-radius: 999px;
+      letter-spacing: 0.2px;
+    }
+
+    /* ── Filter section (Mois / Année / Membre / Catégorie) ── */
+    .filter-section {
+      margin: 0 24px 16px;
+      padding: 14px 18px;
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.06), rgba(55,124,244, 0.04));
+      border: 1px solid rgba(139, 92, 246, 0.18);
+      border-radius: 14px;
+    }
+    .filter-pills {
+      display: flex; gap: 10px; flex-wrap: wrap;
+    }
+    .filter-pill {
+      position: relative;
+      display: flex; align-items: center; gap: 6px;
+      padding: 9px 14px;
+      min-width: 150px;
+      background: var(--bs-body-bg);
+      border: 1px solid var(--bs-border-color);
+      border-radius: 12px;
+      font-size: 13.5px; font-weight: 500;
+      color: var(--bs-body-color);
+      cursor: pointer; user-select: none;
+      flex: 1 1 150px; max-width: 220px;
+      justify-content: space-between;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .filter-pill:hover {
+      border-color: #8b5cf6;
+      box-shadow: 0 2px 8px rgba(139, 92, 246, 0.12);
+    }
+    .filter-pill .pill-text {
+      flex: 1; text-align: left; white-space: nowrap;
+      overflow: hidden; text-overflow: ellipsis;
+    }
+    .filter-pill .caret { font-size: 18px; opacity: 0.5; }
+    /* Variante input direct (filtre Année) : clic + saisie, pas de menu. */
+    .filter-pill-input { padding: 0; cursor: text; }
+    .filter-pill-input:hover { border-color: #8b5cf6; box-shadow: 0 2px 8px rgba(139,92,246,0.12); }
+    .filter-pill-input:focus-within { border-color: #8b5cf6; box-shadow: 0 0 0 3px rgba(139,92,246,0.15); }
+    .filter-pill .pill-input {
+      width: 100%; border: none; background: transparent; outline: none;
+      padding: 9px 14px;
+      font-size: 13.5px; font-weight: 500;
+      color: var(--bs-body-color);
+      font-family: inherit;
+    }
+    .filter-pill .pill-input::placeholder { color: var(--bs-body-color); opacity: 0.55; font-weight: 500; }
+    /* Affiche les flèches up/down (stepper année) — même style que les stats. */
+    .filter-pill .pill-input::-webkit-outer-spin-button,
+    .filter-pill .pill-input::-webkit-inner-spin-button {
+      -webkit-appearance: auto; opacity: 1; margin: 0;
+    }
+    .filter-pill .pill-input[type=number] { -moz-appearance: auto; appearance: auto; }
+    .filter-menu {
+      position: absolute; top: 105%; left: 0; right: 0; margin: 0;
+      padding: 4px; list-style: none;
+      background: var(--bs-body-bg);
+      border: 1px solid var(--bs-border-color);
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(139, 92, 246, 0.18);
+      z-index: 50; max-height: 280px; overflow-y: auto;
+    }
+    .filter-menu li {
+      padding: 8px 12px; border-radius: 8px;
+      font-size: 13px; font-weight: 500;
+      color: var(--bs-body-color);
+      cursor: pointer;
+    }
+    .filter-menu li:hover { background: rgba(139, 92, 246, 0.08); color: #8b5cf6; }
+    .filter-menu li.active {
+      background: linear-gradient(135deg, #8b5cf6, #a78bfa);
+      color: #fff;
+    }
+
+    .fct-toolbar { display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding:16px 24px; }
+    .fct-toolbar .search-wrap { position:relative; flex:1; min-width:180px; max-width:320px; }
+    .fct-toolbar .search-wrap .material-icons-outlined { position:absolute; left:11px; top:50%; transform:translateY(-50%); font-size:19px; opacity:0.4; }
+    .fct-search {
+      width:100%; padding:8px 14px 8px 38px; border-radius:10px;
+      border:1px solid var(--bs-border-color); background:var(--bs-body-bg);
+      font-size:13.5px; outline:none; transition:border-color .2s, box-shadow .2s; color:var(--bs-body-color);
+    }
+    .fct-search:focus { border-color:#7c3aed; box-shadow:0 0 0 3px rgba(124,58,237,0.13); }
+    .filter-chip {
+      padding:7px 14px; border-radius:20px; border:1px solid var(--bs-border-color); background:var(--bs-body-bg);
+      font-size:12.5px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:6px;
+      transition:all .2s; color:var(--bs-body-color); white-space:nowrap;
+    }
+    .filter-chip:hover { border-color:#7c3aed; color:#7c3aed; }
+    .filter-chip.active { background:rgba(124,58,237,0.12); border-color:#7c3aed; color:#7c3aed; }
+    .filter-chip .chip-dot { width:7px; height:7px; border-radius:50%; display:inline-block; }
+
+    /* ══ TABLE ══ */
+    .fct-table { width:100%; border-collapse:separate; border-spacing:0; }
+    .fct-table thead tr { background:rgba(124,58,237,0.04); }
+    .fct-table thead th {
+      padding:12px 18px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.8px;
+      color:var(--bs-body-color); opacity:0.65; text-align:left; white-space:nowrap;
+    }
+    .fct-table thead th:first-child { padding-left:24px; }
+    .fct-table thead th:last-child  { padding-right:24px; }
+    .fct-table tbody tr { transition:background .18s; border-top:1px solid var(--bs-border-color); }
+    .fct-table tbody tr:hover { background:rgba(124,58,237,0.05); }
+    .fct-table td { padding:14px 18px; font-size:13.5px; vertical-align:middle; }
+    .fct-table td:first-child { padding-left:24px; }
+    .fct-table td:last-child  { padding-right:24px; }
+    .fct-table tbody tr { animation:fadeUp .3s ease both; }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+
+    /* Name cell */
+    .fct-name-cell { display:flex; align-items:center; gap:10px; }
+    .fct-icon-sm {
+      width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center;
+      color:#fff; flex-shrink:0;
+    }
+    .fct-icon-sm .material-icons-outlined { font-size:18px; }
+    .fct-name-main { font-weight:600; font-size:13.5px; line-height:1.2; }
+    .fct-name-sub { font-size:11.5px; opacity:0.6; }
+
+    /* Category badge */
+    .cat-badge {
+      display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:20px;
+      font-size:11.5px; font-weight:600;
+      background:rgba(148,163,184,0.12); color:#64748b; border:1px solid rgba(148,163,184,0.2);
+    }
+    .cat-badge .cat-dot { width:6px; height:6px; border-radius:50%; background:currentColor; }
+
+    /* Type badge */
+    .type-badge {
+      display:inline-flex; align-items:center; gap:4px; padding:3px 9px; border-radius:20px;
+      font-size:11px; font-weight:600;
+      background:rgba(245,158,11,0.10); color:#d97706; border:1px solid rgba(245,158,11,0.22);
+    }
+    .type-badge.fixe { background:rgba(34,197,94,0.10); color:#16a34a; border-color:rgba(34,197,94,0.22); }
+
+    /* Status badge */
+    .status-badge {
+      display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:20px;
+      font-size:11px; font-weight:700;
+    }
+    .status-badge .status-dot { width:6px; height:6px; border-radius:50%; background:currentColor; }
+    .status-badge.payee   { background:rgba(34,197,94,0.12); color:#16a34a; border:1px solid rgba(34,197,94,0.25); }
+    .status-badge.attente { background:rgba(245,158,11,0.12); color:#d97706; border:1px solid rgba(245,158,11,0.25); }
+    .status-badge.retard  { background:rgba(239,68,68,0.12); color:#dc2626; border:1px solid rgba(239,68,68,0.25); }
+
+    /* Amount cell */
+    .amount-cell { font-weight:700; font-size:14px; color:#dc2626; white-space:nowrap; }
+    .amount-cell.payee { color:#16a34a; }
+    .amount-cell.attente { color:#d97706; }
+
+    /* Row actions */
+    .tbl-action-btn {
+      width:30px; height:30px; border-radius:8px; border:1px solid var(--bs-border-color);
+      background:transparent; cursor:pointer; display:inline-flex; align-items:center; justify-content:center;
+      color:var(--bs-body-color); opacity:0.65; transition:all .2s;
+    }
+    .tbl-action-btn:hover { opacity:1; background:rgba(124,58,237,0.1); border-color:#7c3aed; color:#7c3aed; }
+    .tbl-action-btn.pay:hover { background:rgba(34,197,94,0.1); border-color:#22c55e; color:#16a34a; }
+    .tbl-action-btn.danger:hover { background:rgba(239,68,68,0.1); border-color:#ef4444; color:#ef4444; }
+    .tbl-action-btn .material-icons-outlined { font-size:16px; }
+
+    /* Empty state */
+    .fct-empty { padding:60px 20px; text-align:center; }
+    .fct-empty-icon {
+      width:80px; height:80px; border-radius:24px;
+      background:linear-gradient(135deg,rgba(124,58,237,0.1),rgba(168,85,247,0.05));
+      display:flex; align-items:center; justify-content:center; font-size:36px; color:#7c3aed;
+      margin:0 auto 16px;
+    }
+
+    /* Modal (Angular-only) */
+    .fct-overlay { position:fixed; inset:0; z-index:1080; background:rgba(2,6,23,0.6); backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; padding:20px; }
+    .fct-card { position:relative; width:100%; max-width:560px; max-height:92vh; overflow:auto; background:var(--bs-body-bg); color:var(--bs-body-color); border:1px solid var(--bs-border-color); border-radius:18px; box-shadow:0 22px 60px rgba(0,0,0,0.35); padding:26px 28px 22px; }
+    .fct-card .accent { position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg,#7c3aed,#a855f7); border-radius:18px 18px 0 0; }
+    .fct-head { display:flex; align-items:flex-start; gap:12px; padding-bottom:14px; margin-bottom:16px; border-bottom:1px solid var(--bs-border-color); }
+    .fct-head-icon { width:36px; height:36px; border-radius:10px; background:linear-gradient(135deg,#7c3aed,#a855f7); display:flex; align-items:center; justify-content:center; color:#fff; flex-shrink:0; }
+    .fct-head-icon i { font-size:22px; }
+    .fct-title { margin:0; font-size:17px; font-weight:700; }
+    .fct-sub { margin:2px 0 0; font-size:12.5px; opacity:0.55; }
+    .fct-close { background:transparent; border:0; cursor:pointer; color:#7c3aed; padding:2px; border-radius:8px; display:flex; align-items:center; }
+    .fct-close:hover { background:rgba(124,58,237,0.1); }
+    .fct-form { display:flex; flex-direction:column; gap:14px; }
+    .fct-row { display:grid; gap:12px; grid-template-columns:1fr 1fr; }
+    @media (max-width:520px) { .fct-row { grid-template-columns:1fr; } }
+    .fct-field { display:flex; flex-direction:column; gap:6px; }
+    .fct-field label { display:flex; align-items:center; gap:5px; font-size:13px; font-weight:600; color:#7c3aed; }
+    .fct-field label i { font-size:16px; }
+    .fct-field label .req { color:#ef4444; margin-left:2px; }
+    .fct-field input, .fct-field select, .fct-field textarea { width:100%; padding:10px 14px; border:1px solid var(--bs-border-color); border-radius:999px; background:var(--bs-body-bg); color:var(--bs-body-color); font-size:13.5px; outline:none; transition:border-color .2s, box-shadow .2s; font-family:inherit; }
+    .fct-field textarea { border-radius:14px; resize:vertical; min-height:70px; }
+    .fct-field input:focus, .fct-field select:focus, .fct-field textarea:focus { border-color:#7c3aed; box-shadow:0 0 0 3px rgba(124,58,237,0.14); }
+    .fct-suffix { position:relative; }
+    .fct-suffix input { padding-right:52px; }
+    .fct-suffix span { position:absolute; right:16px; top:50%; transform:translateY(-50%); font-size:13px; font-weight:700; opacity:0.65; }
+    .fct-alert { padding:9px 12px; border-radius:10px; font-size:13px; background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.3); color:#dc2626; }
+    .fct-actions { display:flex; gap:10px; justify-content:flex-end; margin-top:6px; padding-top:14px; border-top:1px solid var(--bs-border-color); }
+    .fct-btn-cancel { padding:9px 18px; border-radius:999px; background:transparent; color:var(--bs-body-color); opacity:0.75; border:1px solid var(--bs-border-color); font-size:13.5px; font-weight:600; cursor:pointer; }
+    .fct-btn-cancel:hover { opacity:1; background:rgba(0,0,0,0.04); }
+    .fct-btn-save { padding:0 22px; height:40px; border-radius:999px; background:linear-gradient(135deg,#7c3aed,#a855f7); color:#fff; border:0; cursor:pointer; font-size:13.5px; font-weight:600; box-shadow:0 3px 12px rgba(124,58,237,0.3); display:inline-flex; align-items:center; gap:6px; }
+    .fct-btn-save:hover { filter:brightness(1.08); }
+    .fct-btn-delete { padding:0 22px; height:40px; border-radius:999px; background:linear-gradient(135deg,#dc2626,#ef4444); color:#fff; border:0; cursor:pointer; font-size:13.5px; font-weight:600; }
+
+    /* Toast */
+    .fct-toast { position:fixed; bottom:24px; right:24px; z-index:1090; padding:12px 16px; border-radius:12px; color:#fff; font-size:13.5px; font-weight:600; display:flex; align-items:center; gap:8px; box-shadow:0 10px 30px rgba(0,0,0,0.3); animation:fadeUp .25s ease; }
+    .fct-toast.success { background:linear-gradient(135deg,#16a34a,#22c55e); }
+    .fct-toast.danger  { background:linear-gradient(135deg,#dc2626,#ef4444); }
+    .fct-toast.warning { background:linear-gradient(135deg,#d97706,#f59e0b); }
+    .fct-toast.info    { background:linear-gradient(135deg,#0891b2,#06b6d4); }
+    .fct-toast .material-icons-outlined { font-size:18px; }
+
+    @media (max-width:900px) { .hide-mobile { display:none; } }
+  </style>
+
+  <!-- ── PAGE HEADER ── -->
+  <div class="fct-page-header">
+    <div>
+      <h3>
+        <span class="material-icons-outlined" style="font-size:28px;color:#7c3aed;">receipt_long</span>
+        Factures
+      </h3>
+      <p class="subtitle">
+        Suivez et gérez toutes les factures familiales
+        <span *ngIf="isConsultant" style="display:inline-flex;align-items:center;gap:4px;margin-left:8px;padding:3px 10px;border-radius:999px;background:rgba(16,185,129,.12);color:#059669;font-size:11.5px;font-weight:700;">
+          <span class="material-icons-outlined" style="font-size:13px">visibility</span>Lecture seule
+        </span>
+      </p>
+    </div>
+    <button *ngIf="canEdit" class="btn btn-grd btn-grd-primary d-flex align-items-center gap-2"
+            (click)="openAddModal()"
+            style="border-radius:10px;font-size:13.5px;padding:10px 20px;white-space:nowrap;">
+      <span class="material-icons-outlined" style="font-size:18px">add</span>
+      Ajouter une facture
+    </button>
+  </div>
+
+  <!-- ── Hero KPI Banner + sous-cartes En Attente / En Retard.
+       Connecté au backend via `this.factures` (GET /factures/compte/{id}),
+       100% dynamique selon les filtres mois/année/membre. Polices et couleurs
+       alignées sur le reste du template web (Noto Sans + bleu du Home). ── -->
+  <style>
+    .fct-kpi-banner {
+      background: linear-gradient(135deg, #377CF4 0%, #2E3F8F 100%);
+      color: #fff;
+      border-radius: 22px;
+      padding: 1.25rem 1.6rem;
+      box-shadow: 0 8px 28px rgba(55,124,244,0.35);
+      position: relative;
+      overflow: hidden;
+      font-family: "Noto Sans", sans-serif;
+    }
+    .fct-kpi-banner::after {
+      content: ''; position: absolute; right: -60px; top: -60px;
+      width: 260px; height: 260px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,255,255,0.10), transparent 70%);
+      pointer-events: none;
+    }
+    .fct-kpi-title { font-size: 13px; font-weight: 700; letter-spacing: 0.3px; color: #fff; margin: 0 0 10px; }
+    .fct-kpi-title .material-icons-outlined { color: #fde68a; }
+    .fct-kpi-label { font-size: 11px; font-weight: 600; letter-spacing: 0.6px; text-transform: uppercase; color: #bae6fd; margin: 0 0 6px; }
+    .fct-kpi-label .material-icons-outlined { color: #fde68a; }
+    .fct-kpi-amount {
+      font-size: 34px; font-weight: 800; letter-spacing: -1px; line-height: 1.05;
+      background: linear-gradient(90deg, #ffffff 0%, #fef3c7 60%, #fde68a 100%);
+      -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent; color: transparent;
+      text-shadow: 0 2px 12px rgba(254,243,199,0.25);
+      margin: 0 0 10px;
+    }
+    .fct-kpi-amount .unit { font-size: 16px; margin-left: 5px; font-weight: 600; vertical-align: middle; background: none; -webkit-text-fill-color: #fde68a; color: #fde68a; }
+    .fct-kpi-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.30);
+      border-radius: 999px; padding: 6px 14px;
+      font-size: 12.5px; font-weight: 600; color: #fff;
+      backdrop-filter: blur(6px);
+    }
+    .fct-kpi-badge .material-icons-outlined { color: #fde68a; }
+    .fct-kpi-right { text-align: right; }
+    .fct-kpi-right .label-small { font-size: 11px; font-weight: 600; letter-spacing: 0.6px; text-transform: uppercase; color: #bae6fd; margin: 0 0 4px; }
+    .fct-kpi-right .label-small .material-icons-outlined { color: #fde68a; }
+    .fct-kpi-right .amount-small { font-size: 20px; font-weight: 700; letter-spacing: -0.3px; color: #fde68a; margin: 0; }
+    .fct-kpi-right .amount-small .unit-small { font-size: 12px; color: #fef3c7; margin-left: 4px; font-weight: 500; }
+    .fct-kpi-right .hint { font-size: 11.5px; font-weight: 500; color: #bae6fd; margin: 4px 0 0; }
+
+    /* Sous-cartes En Attente (warning) + En Retard (danger) — couleurs du template. */
+    .fct-sub-card {
+      background: var(--bs-body-bg, #fff);
+      border-radius: 18px;
+      padding: 1rem 1.25rem;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      border-top: 3px solid var(--accent);
+      min-height: 130px;
+      display: flex; flex-direction: column; justify-content: space-between;
+      font-family: "Noto Sans", sans-serif;
+    }
+    .fct-sub-card.attente { --accent: #f59e0b; }
+    .fct-sub-card.retard  { --accent: #ef4444; }
+    .fct-sub-head { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+    .fct-sub-icon { width: 40px; height: 40px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; font-size: 20px; color: #fff; }
+    .fct-sub-card.attente .fct-sub-icon { background: linear-gradient(135deg,#d97706,#f59e0b); }
+    .fct-sub-card.retard  .fct-sub-icon { background: linear-gradient(135deg,#dc2626,#ef4444); }
+    .fct-sub-title  { font-size: 11.5px; font-weight: 600; color: var(--accent); letter-spacing: 0.5px; text-transform: uppercase; opacity: 0.85; }
+    .fct-sub-amount { font-size: 24px;   font-weight: 800; color: var(--bs-body-color,#1e293b); line-height: 1; margin: 0; }
+    .fct-sub-amount .unit { font-size: 11.5px; color: #64748b; font-weight: 500; margin-left: 5px; opacity: 0.7; }
+    .fct-sub-foot   { display: flex; align-items: center; justify-content: space-between; margin-top: 8px; font-size: 11.5px; font-weight: 500; color: #64748b; opacity: 0.85; }
+    .fct-sub-foot .pill { font-size: 11.5px; font-weight: 600; color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); border-radius: 8px; padding: 3px 10px; }
+  </style>
+
+  <!-- Hero -->
+  <div class="row g-3 mb-3">
+    <div class="col-12">
+      <div class="fct-kpi-banner">
+        <p class="fct-kpi-title">
+          <span class="material-icons-outlined" style="vertical-align:middle;font-size:18px;margin-right:6px;">
+            {{ selectedMemberId === 'all' ? 'groups' : 'person' }}
+          </span>{{ heroTitle }}
+        </p>
+        <div class="d-flex align-items-end justify-content-between flex-wrap gap-3">
+          <div style="flex:1 1 auto">
+            <p class="fct-kpi-label">
+              <span class="material-icons-outlined" style="font-size:13px;vertical-align:middle;margin-right:4px;">calendar_today</span>
+              Factures payées du mois · {{ moisLabel }} {{ targetYear }}
+            </p>
+            <h1 class="fct-kpi-amount">
+              {{ totalPayeesMoisCourant | number:'1.0-0' }}<span class="unit">DT</span>
+            </h1>
+            <span class="fct-kpi-badge">
+              <span class="material-icons-outlined" style="font-size:14px">receipt_long</span>
+              {{ nbFacturesMois }} facture{{ nbFacturesMois !== 1 ? 's' : '' }}
+            </span>
+          </div>
+          <div class="fct-kpi-right" style="flex-shrink:0">
+            <p class="label-small">
+              <span class="material-icons-outlined" style="font-size:12px;vertical-align:middle;margin-right:3px;">show_chart</span>
+              Total {{ targetYear }}
+            </p>
+            <p class="amount-small">
+              {{ totalPayeesAnneeCourante | number:'1.0-0' }}<span class="unit-small">DT / an</span>
+            </p>
+            <p class="hint">calculé sur {{ nbFacturesAnnee }} facture{{ nbFacturesAnnee !== 1 ? 's' : '' }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sous-cartes En Attente / En Retard -->
+  <div class="row g-3 mb-4">
+    <div class="col-12 col-sm-6">
+      <div class="fct-sub-card attente h-100">
+        <div class="fct-sub-head">
+          <div class="fct-sub-icon"><span class="material-icons-outlined">hourglass_top</span></div>
+          <span class="fct-sub-title">En Attente</span>
+        </div>
+        <div>
+          <h4 class="fct-sub-amount">
+            {{ nbEnAttenteMois }}<span class="unit">facture{{ nbEnAttenteMois !== 1 ? 's' : '' }}</span>
+          </h4>
+          <div class="fct-sub-foot">
+            <span>{{ totalAttente | number:'1.0-0' }} DT total</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-sm-6">
+      <div class="fct-sub-card retard h-100">
+        <div class="fct-sub-head">
+          <div class="fct-sub-icon"><span class="material-icons-outlined">priority_high</span></div>
+          <span class="fct-sub-title">En Retard</span>
+        </div>
+        <div>
+          <h4 class="fct-sub-amount">
+            {{ nbEnRetardMois }}<span class="unit">facture{{ nbEnRetardMois !== 1 ? 's' : '' }}</span>
+          </h4>
+          <div class="fct-sub-foot">
+            <span>{{ totalRetard | number:'1.0-0' }} DT total</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TABLE CARD ── -->
+  <div class="fct-table-card">
+    <!-- New top-of-table header: title + dynamic count badge -->
+    <div class="list-header">
+      <div class="list-title">
+        <span class="material-icons-outlined list-title-icon">view_list</span>
+        <span>Liste des factures</span>
+      </div>
+      <span class="list-count-badge">{{ filteredFactures.length }} résultats</span>
+    </div>
+
+    <!-- ── Status tabs : Tous / Payées / En attente / En retard ── -->
+    <style>
+      .fct-tabs {
+        display: flex; gap: 6px;
+        padding: 6px;
+        margin: 12px 16px 0;
+        background: #f1f5f9;
+        border-radius: 14px;
+      }
+      .fct-tab {
+        flex: 1;
+        display: flex; align-items: center; justify-content: center; gap: 8px;
+        padding: 10px 14px;
+        background: transparent; border: none;
+        border-radius: 10px;
+        font-family: "Noto Sans", sans-serif;
+        font-size: 13.5px; font-weight: 600;
+        color: #64748b;
+        cursor: pointer;
+        transition: background .15s ease, color .15s ease, box-shadow .15s ease;
+      }
+      .fct-tab .material-icons-outlined { font-size: 18px; }
+      .fct-tab .tab-count {
+        display: inline-flex; align-items: center; justify-content: center;
+        min-width: 22px; height: 22px; padding: 0 7px;
+        border-radius: 999px;
+        background: #94a3b8; color: #fff;
+        font-size: 11.5px; font-weight: 700;
+      }
+      .fct-tab:hover { color: #334155; }
+      .fct-tab.active.all      { background: #fff; color: #475569; box-shadow: 0 2px 8px rgba(15,23,42,0.08); }
+      .fct-tab.active.all .tab-count    { background: #475569; }
+      .fct-tab.active.payee    { background: #fff; color: #16a34a; box-shadow: 0 2px 8px rgba(15,23,42,0.08); }
+      .fct-tab.active.payee .tab-count   { background: #16a34a; }
+      .fct-tab.active.attente  { background: #fff; color: #d97706; box-shadow: 0 2px 8px rgba(15,23,42,0.08); }
+      .fct-tab.active.attente .tab-count { background: #d97706; }
+      .fct-tab.active.retard   { background: #fff; color: #dc2626; box-shadow: 0 2px 8px rgba(15,23,42,0.08); }
+      .fct-tab.active.retard .tab-count  { background: #dc2626; }
+    </style>
+    <div class="fct-tabs" role="tablist">
+      <button type="button" role="tab"
+              class="fct-tab all"
+              [class.active]="statusFilter === 'all'"
+              (click)="setStatusFilter('all')">
+        <span class="material-icons-outlined">view_list</span>
+        <span>Tous</span>
+        <span class="tab-count">{{ countAll }}</span>
+      </button>
+      <button type="button" role="tab"
+              class="fct-tab payee"
+              [class.active]="statusFilter === 'payee'"
+              (click)="setStatusFilter('payee')">
+        <span class="material-icons-outlined">check_circle</span>
+        <span>Payées</span>
+        <span class="tab-count">{{ countPayees }}</span>
+      </button>
+      <button type="button" role="tab"
+              class="fct-tab attente"
+              [class.active]="statusFilter === 'attente'"
+              (click)="setStatusFilter('attente')">
+        <span class="material-icons-outlined">hourglass_top</span>
+        <span>En attente</span>
+        <span class="tab-count">{{ countAttente }}</span>
+      </button>
+      <button type="button" role="tab"
+              class="fct-tab retard"
+              [class.active]="statusFilter === 'retard'"
+              (click)="setStatusFilter('retard')">
+        <span class="material-icons-outlined">priority_high</span>
+        <span>En retard</span>
+        <span class="tab-count">{{ countRetard }}</span>
+      </button>
+    </div>
+
+    <!-- Filter section: Mois / Année / Membre / Catégorie (each filters live) -->
+    <div class="filter-section">
+      <div class="filter-pills">
+        <div class="filter-pill" (click)="toggleMonthMenu($event)">
+          <span class="pill-text">{{ monthDropdownLabel(selectedMonth) }}</span>
+          <span class="material-icons-outlined caret">expand_more</span>
+          <ul class="filter-menu" *ngIf="monthOpen" (click)="$event.stopPropagation()">
+            <li [class.active]="selectedMonth === 'all'" (click)="setMonth('all', $event)">Tous les mois</li>
+            <li *ngFor="let m of months"
+                [class.active]="selectedMonth === m.value"
+                (click)="setMonth(m.value, $event)">{{ m.label }}</li>
+          </ul>
+        </div>
+        <!-- Année : pill input direct — clic + saisie libre. -->
+        <div class="filter-pill filter-pill-input"
+             (click)="$any($event.currentTarget).querySelector('input').focus()">
+          <input type="number"
+                 class="pill-input"
+                 inputmode="numeric" min="1900" max="2999" step="1"
+                 placeholder="Année"
+                 [value]="yearInputValue"
+                 (click)="$event.stopPropagation()"
+                 (input)="setYearFromInput($any($event.target).value, $event)">
+        </div>
+        <div class="filter-pill" (click)="toggleMemberMenu($event)">
+          <span class="pill-text">{{ memberDropdownLabel(selectedMemberId) }}</span>
+          <span class="material-icons-outlined caret">expand_more</span>
+          <ul class="filter-menu" *ngIf="memberOpen" (click)="$event.stopPropagation()">
+            <li [class.active]="selectedMemberId === 'all'" (click)="setMemberFilter('all', $event)">Tous les membres</li>
+            <li *ngFor="let m of memberOptions"
+                [class.active]="selectedMemberId === m.id"
+                (click)="setMemberFilter(m.id, $event)">{{ m.name }}</li>
+          </ul>
+        </div>
+        <div class="filter-pill" (click)="toggleCategoryMenu($event)">
+          <span class="pill-text">{{ categoryDropdownLabel(selectedCategory) }}</span>
+          <span class="material-icons-outlined caret">expand_more</span>
+          <ul class="filter-menu" *ngIf="categoryOpen" (click)="$event.stopPropagation()">
+            <li [class.active]="selectedCategory === 'all'" (click)="setCategoryFilter('all', $event)">Toutes catégories</li>
+            <li *ngFor="let cat of categoryOptions"
+                [class.active]="selectedCategory === cat"
+                (click)="setCategoryFilter(cat, $event)">{{ cat }}</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading / error -->
+    <div *ngIf="loading" class="fct-toolbar" style="padding-top:0;opacity:0.65;">
+      <span class="material-icons-outlined">hourglass_top</span> Chargement…
+    </div>
+    <div *ngIf="errorMsg && !loading" class="fct-toolbar" style="padding-top:0;color:#ef4444;">
+      <span class="material-icons-outlined">error_outline</span> {{ errorMsg }}
+      <button class="filter-chip" (click)="reload()">Réessayer</button>
+    </div>
+
+    <!-- Table -->
+    <div class="table-responsive" *ngIf="!loading && filteredFactures.length > 0; else emptyTpl">
+      <table class="fct-table">
+        <thead>
+          <tr>
+            <th class="hide-mobile">Membre</th>
+            <th>Nom</th>
+            <th>Catégorie</th>
+            <th class="hide-mobile">Type</th>
+            <th>Montant</th>
+            <th class="hide-mobile">Date</th>
+            <th>Description</th>
+            <th class="hide-mobile">Fichier</th>
+            <th>Statut</th>
+            <th style="width:60px"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let f of filteredFactures">
+            <td class="hide-mobile">
+              <div class="d-flex align-items-center gap-2">
+                <span class="alloc-avatar"
+                      style="width:28px;height:28px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;background:linear-gradient(135deg,#7c3aed,#a855f7);">
+                  {{ memberInitials(f) }}
+                </span>
+                <span>{{ memberName(f) }}</span>
+              </div>
+            </td>
+            <td>
+              <span style="font-weight:600;color:var(--bs-body-color);">{{ f.title || '—' }}</span>
+            </td>
+            <td>
+              <span class="cat-badge"><span class="cat-dot"></span>{{ categoryLabel(f) }}</span>
+            </td>
+            <td class="hide-mobile">
+              <span class="type-badge" [class.fixe]="typeOf(f) === 'fixe'">{{ typeLabel(typeOf(f)) }}</span>
+            </td>
+            <td class="amount-cell"
+                [class.payee]="uiStatus(f.statut) === 'payee'"
+                [class.attente]="uiStatus(f.statut) === 'attente'">
+              {{ f.amount | number:'1.3-3' }} DT
+            </td>
+            <td class="hide-mobile">{{ formatDate(f.dueDate || f.issueDate) }}</td>
+            <td>
+              <div class="fct-name-main">{{ f.title }}</div>
+            </td>
+            <td class="hide-mobile">
+              <a *ngIf="f.fileUrl; else noFileTpl"
+                 [href]="fileLink(f.fileUrl)" target="_blank" rel="noopener"
+                 style="color:#7c3aed;text-decoration:none;display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:600;"
+                 [title]="f.fileName || 'Voir le fichier'">
+                <span class="material-icons-outlined" style="font-size:16px">attach_file</span>
+                Voir
+              </a>
+              <ng-template #noFileTpl>
+                <span style="font-size:12.5px;opacity:0.45;">—</span>
+              </ng-template>
+            </td>
+            <td>
+              <span class="status-badge" [ngClass]="uiStatus(f.statut)">
+                <span class="status-dot"></span>{{ statutLabel(uiStatus(f.statut)) }}
+              </span>
+            </td>
+            <td>
+              <div class="d-flex gap-1 justify-content-end">
+                <button *ngIf="canEdit && uiStatus(f.statut) !== 'payee'" class="tbl-action-btn pay"
+                        (click)="markPaid(f)" title="Marquer payée">
+                  <span class="material-icons-outlined">check_circle</span>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <ng-template #emptyTpl>
+      <div class="fct-empty">
+        <div class="fct-empty-icon"><span class="material-icons-outlined">inbox</span></div>
+        <h5 class="fw-bold mb-2">Aucune facture trouvée</h5>
+        <p class="text-secondary mb-4" style="max-width:320px; margin:0 auto;">
+          Essayez d'autres filtres ou ajoutez une nouvelle facture.
+        </p>
+        <button *ngIf="canEdit" class="btn btn-grd btn-grd-primary d-flex align-items-center gap-2 mx-auto"
+                (click)="openAddModal()" style="border-radius:10px;">
+          <span class="material-icons-outlined" style="font-size:18px">add</span>Ajouter une facture
+        </button>
+      </div>
+    </ng-template>
+  </div>
+
+  <!-- ── ADD / EDIT MODAL ── -->
+  <div class="fct-overlay" *ngIf="modalOpen" (click)="closeModal()">
+    <div class="fct-card" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+      <div class="accent"></div>
+
+      <div class="fct-head">
+        <div class="fct-head-icon">
+          <i class="material-icons-outlined">{{ isEditing ? 'edit' : 'add_circle_outline' }}</i>
+        </div>
+        <div style="flex:1; min-width:0;">
+          <h5 class="fct-title">{{ isEditing ? 'Modifier la facture' : 'Ajouter une facture' }}</h5>
+          <p class="fct-sub">Renseignez les informations de la facture</p>
+        </div>
+        <button type="button" class="fct-close" (click)="closeModal()" aria-label="Fermer">
+          <i class="material-icons-outlined">close</i>
+        </button>
+      </div>
+
+      <form class="fct-form" (ngSubmit)="saveFacture()" #f="ngForm" novalidate>
+        <div class="fct-field">
+          <label><i class="material-icons-outlined">title</i> Nom <span class="req">*</span></label>
+          <input type="text" name="title" [(ngModel)]="draft.title" placeholder="Ex : Facture STEG" required>
+        </div>
+
+        <div class="fct-field">
+          <label><i class="material-icons-outlined">person</i> Membre concerné <span class="req">*</span></label>
+          <select name="membreId" [(ngModel)]="draft.membreId" required>
+            <option [ngValue]="null">— Sélectionner un membre —</option>
+            <option *ngFor="let m of membres" [ngValue]="m.id">
+              {{ m.user?.firstName }} {{ m.user?.lastName }}
+              <ng-container *ngIf="!m.user?.firstName && !m.user?.lastName">Membre #{{ m.id }}</ng-container>
+            </option>
+          </select>
+        </div>
+
+        <div class="fct-row">
+          <div class="fct-field">
+            <label><i class="material-icons-outlined">apps</i> Catégorie <span class="req">*</span></label>
+            <select name="categoryName" [(ngModel)]="draft.categoryName" required>
+              <option *ngFor="let p of CAT_PRESETS" [value]="p.label">{{ p.label }}</option>
+            </select>
+          </div>
+          <div class="fct-field">
+            <label><i class="material-icons-outlined">label</i> Type <span class="req">*</span></label>
+            <select name="type" [(ngModel)]="draft.type" required>
+              <option value="fixe">Fixe</option>
+              <option value="variable">Variable</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Nom personnalisé (visible uniquement quand "Autre" est sélectionné) -->
+        <div class="fct-field" *ngIf="isAutreSelected">
+          <label><i class="material-icons-outlined">edit_note</i> Préciser la catégorie <span class="req">*</span></label>
+          <input type="text" name="customCategoryName"
+                 [(ngModel)]="draft.customCategoryName"
+                 placeholder="Ex : Cadeaux, Abonnements, …" maxlength="40">
+        </div>
+
+        <div class="fct-row">
+          <div class="fct-field">
+            <label><i class="material-icons-outlined">payments</i> Montant (DT) <span class="req">*</span></label>
+            <div class="fct-suffix">
+              <input type="number" min="0" step="0.001" name="amount" [(ngModel)]="draft.amount" placeholder="0" required>
+              <span>DT</span>
+            </div>
+          </div>
+          <div class="fct-field">
+            <label><i class="material-icons-outlined">flag</i> Statut <span class="req">*</span></label>
+            <select name="statut" [(ngModel)]="draft.statut" required>
+              <option value="attente">En attente</option>
+              <option value="payee">Payée</option>
+              <option value="retard">En retard</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="fct-row">
+          <div class="fct-field">
+            <label><i class="material-icons-outlined">event</i> Date d'émission <span class="req">*</span></label>
+            <input type="date" name="issueDate" [(ngModel)]="draft.issueDate" required>
+          </div>
+          <div class="fct-field">
+            <label><i class="material-icons-outlined">event_available</i> Date d'échéance</label>
+            <input type="date" name="dueDate" [(ngModel)]="draft.dueDate">
+          </div>
+        </div>
+
+        <!-- La date de paiement n'est PAS exposée à l'utilisateur — elle
+             est imposée automatiquement = aujourd'hui quand la facture passe
+             en PAYEE (cf. persistFacture). Règle métier : toute facture
+             marquée payée aujourd'hui est imputée au mois courant. -->
+
+        <!-- ── Fichier de facture (PDF/image). Le File brut est gardé dans
+             draft.file et envoyé en multipart à /factures/upload/{id} APRÈS
+             la création de la facture (cf. persistFacture). Limite 5 Mo. -->
+        <div class="fct-field">
+          <label><i class="material-icons-outlined">attach_file</i> Fichier de la facture</label>
+          <input type="file"
+                 name="factureFile"
+                 accept=".pdf,image/*"
+                 (change)="onFileSelected($event)"
+                 style="width:100%;padding:8px 10px;border:1px dashed var(--bs-border-color);border-radius:10px;background:transparent;font-family:inherit;font-size:13px;">
+          <div *ngIf="draft.fileName" style="margin-top:8px;display:flex;align-items:center;gap:8px;font-size:12.5px;color:#475569;">
+            <span class="material-icons-outlined" style="font-size:16px;color:#16a34a;">check_circle</span>
+            <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ draft.fileName }}</span>
+            <a *ngIf="draft.existingFileUrl && !draft.file" [href]="fileLink(draft.existingFileUrl)" target="_blank" rel="noopener"
+               style="color:#7c3aed;text-decoration:none;font-weight:600;">Voir</a>
+            <button type="button" (click)="removeAttachedFile()"
+                    style="border:none;background:transparent;color:#ef4444;cursor:pointer;padding:0;display:inline-flex;align-items:center;">
+              <span class="material-icons-outlined" style="font-size:16px;">close</span>
+            </button>
+          </div>
+        </div>
+
+        <div *ngIf="formError" class="fct-alert">{{ formError }}</div>
+
+        <div class="fct-actions">
+          <button type="button" class="fct-btn-cancel" (click)="closeModal()">Annuler</button>
+          <button type="submit" class="fct-btn-save" [disabled]="saving">
+            <i class="material-icons-outlined">{{ saving ? 'hourglass_top' : (isEditing ? 'save' : 'add') }}</i>
+            {{ saving ? 'Enregistrement…' : (isEditing ? 'Enregistrer' : 'Ajouter') }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ── DELETE CONFIRM ── -->
+  <div class="fct-overlay" *ngIf="deletingId !== null" (click)="cancelDelete()">
+    <div class="fct-card" style="max-width:420px" (click)="$event.stopPropagation()">
+      <div class="accent" style="background:linear-gradient(90deg,#dc2626,#ef4444);"></div>
+      <div style="text-align:center; padding:10px 0 20px;">
+        <div style="width:68px; height:68px; border-radius:20px; background:rgba(239,68,68,0.1); display:flex; align-items:center; justify-content:center; margin:0 auto 18px; font-size:30px; color:#ef4444;">
+          <span class="material-icons-outlined">delete_forever</span>
+        </div>
+        <h5 class="fw-bold mb-2">Supprimer "{{ deletingName() }}" ?</h5>
+        <p class="text-secondary mb-0" style="font-size:13.5px">Cette action est irréversible.</p>
+      </div>
+      <div class="fct-actions" style="justify-content:center;">
+        <button type="button" class="fct-btn-cancel" (click)="cancelDelete()">Annuler</button>
+        <button type="button" class="fct-btn-delete" (click)="confirmDelete()">
+          <span class="material-icons-outlined align-middle me-1" style="font-size:17px">delete</span>
+          Supprimer
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TOAST ── -->
+  <div *ngIf="toast.show" class="fct-toast" [ngClass]="toast.type">
+    <span class="material-icons-outlined">
+      {{ toast.type === 'success' ? 'check_circle' : toast.type === 'danger' ? 'delete_forever' : toast.type === 'warning' ? 'warning' : 'info' }}
+    </span>
+    {{ toast.msg }}
+  </div>

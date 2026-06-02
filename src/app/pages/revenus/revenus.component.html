@@ -1,0 +1,854 @@
+<style>
+    /* ══ SHARED SYSTEM ══ */
+    .btn-grd-primary,.btn-grd.btn-grd-primary{background:linear-gradient(135deg,#377CF4,#2E3F8F)!important;border:none!important;color:#fff!important;}
+    .btn-grd-primary:hover{background:linear-gradient(135deg, #2E6BE0, #26336F)!important;}
+    .btn-grd-success,.btn-grd.btn-grd-success{background:linear-gradient(135deg,#16a34a,#22c55e)!important;border:none!important;color:#fff!important;}
+    .btn-grd-success:hover{background:linear-gradient(135deg,#15803d,#16a34a)!important;}
+    .btn-grd-danger,.btn-grd.btn-grd-danger{background:linear-gradient(135deg,#dc2626,#ef4444)!important;border:none!important;color:#fff!important;}
+    .btn-grd-warning,.btn-grd.btn-grd-warning{background:linear-gradient(135deg,#d97706,#f59e0b)!important;border:none!important;color:#fff!important;}
+    .btn-grd-info,.btn-grd.btn-grd-info{background:linear-gradient(135deg,#0891b2,#06b6d4)!important;border:none!important;color:#fff!important;}
+    .btn-outline-primary{border-color:#2E3F8F!important;color:#2E3F8F!important;}
+    .btn-outline-primary:hover{background:#2E3F8F!important;color:#fff!important;}
+    .btn-outline-success{border-color:#22c55e!important;color:#22c55e!important;}
+    .btn-outline-success:hover{background:#22c55e!important;color:#fff!important;}
+    .btn-outline-danger{border-color:#ef4444!important;color:#ef4444!important;}
+    .btn-outline-danger:hover{background:#ef4444!important;color:#fff!important;}
+    .btn-outline-warning{border-color:#f59e0b!important;color:#f59e0b!important;}
+    .btn-outline-warning:hover{background:#f59e0b!important;color:#fff!important;}
+    .bg-grd-primary{background:linear-gradient(135deg,#377CF4,#2E3F8F)!important;}
+    .bg-grd-success{background:linear-gradient(135deg,#16a34a,#22c55e)!important;}
+    .bg-grd-danger{background:linear-gradient(135deg,#dc2626,#ef4444)!important;}
+    .bg-grd-warning{background:linear-gradient(135deg,#d97706,#f59e0b)!important;}
+    .bg-grd-info{background:linear-gradient(135deg,#0891b2,#06b6d4)!important;}
+    .bg-grd-purple{background:linear-gradient(135deg,#7c3aed,#a855f7)!important;}
+    .fb-nav-link.active{background:linear-gradient(135deg,#377CF4,#2E3F8F)!important;color:white!important;box-shadow:0 4px 16px rgba(55,124,244,.3)!important;}
+
+    /* ══ SIDEBAR ══ */
+    .fb-nav-label{padding:14px 16px 4px;font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,0.3);}
+    .fb-nav-link{display:flex;align-items:center;gap:12px;padding:10px 14px;margin:2px 10px;border-radius:10px;color:rgba(255,255,255,0.6);text-decoration:none;transition:all 0.3s ease;position:relative;}
+    .fb-nav-link:hover{background:rgba(255,255,255,0.08);color:white;transform:translateX(4px);}
+    .fb-nav-link.active::before{content:"";position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:60%;background:#16A34A;border-radius:0 3px 3px 0;}
+    .fb-nav-icon{width:34px;height:34px;display:flex;align-items:center;justify-content:center;border-radius:8px;font-size:17px;flex-shrink:0;background:rgba(255,255,255,0.06);}
+    .fb-nav-link.active .fb-nav-icon{background:rgba(255,255,255,0.15);}
+    .fb-nav-text{font-size:13.5px;font-weight:500;flex:1;}
+    .fb-badge{background:#16A34A;color:white;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;}
+    .fb-divider{height:1px;background:rgba(255,255,255,0.07);margin:6px 16px;}
+    .fb-nav-link.logout{color:rgba(255,120,120,0.7);}
+    .fb-nav-link.logout:hover{color:#ff8080;background:rgba(255,100,100,0.08);}
+    .fb-submenu{list-style:none;padding:2px 0;margin:0;overflow:hidden;max-height:0;transition:max-height 0.3s ease;}
+    .fb-submenu.open{max-height:300px;}
+    .fb-sub-link{display:flex;align-items:center;gap:10px;padding:8px 14px;margin:2px 10px 2px 20px;border-radius:10px;color:rgba(255,255,255,0.55);text-decoration:none;font-size:13px;font-weight:500;transition:all 0.2s;}
+    .fb-sub-link::before{content:'';width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,0.25);flex-shrink:0;}
+    .fb-sub-link:hover{color:white;background:rgba(255,255,255,0.08);}
+    .fb-sub-link.active{color:white;background:linear-gradient(135deg,#377CF4,#2E3F8F);box-shadow:0 4px 12px rgba(55,124,244,0.3);}
+    .fb-sub-link.active::before{background:white;}
+    .stats-arrow{transition:transform 0.3s;font-size:16px!important;margin-left:auto;}
+
+    /* ══ REVENUS PAGE ══ */
+
+    /* KPI cards */
+    .kpi-card {
+      border-radius: 16px;
+      border: 1px solid var(--bs-border-color);
+      background: var(--bs-body-bg);
+      box-shadow: 0 2px 14px rgba(0,0,0,0.12);
+      padding: 20px 22px;
+      position: relative;
+      overflow: hidden;
+      transition: transform .2s, box-shadow .2s;
+    }
+    .kpi-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.18); }
+    .kpi-card::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+    }
+    .kpi-card.kpi-green::after  { background: linear-gradient(90deg,#16a34a,#22c55e); }
+    .kpi-card.kpi-blue::after   { background: linear-gradient(90deg,#377CF4,#2E3F8F); }
+    .kpi-card.kpi-orange::after { background: linear-gradient(90deg,#d97706,#f59e0b); }
+    .kpi-card.kpi-purple::after { background: linear-gradient(90deg,#7c3aed,#a855f7); }
+    .kpi-icon {
+      width: 48px; height: 48px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; color: white; flex-shrink: 0;
+    }
+    .kpi-label { font-size: 11.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.65; margin-bottom: 3px; }
+    .kpi-value { font-size: 24px; font-weight: 800; line-height: 1; }
+    .kpi-sub { font-size: 11.5px; margin-top: 5px; opacity: 0.6; }
+    .kpi-trend { font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 2px; }
+    .kpi-trend.up   { color: #22c55e; }
+    .kpi-trend.down { color: #ef4444; }
+
+    /* Breakdown bars in KPI */
+    .kpi-progress { height: 5px; border-radius: 99px; background: rgba(255,255,255,0.1); margin-top: 12px; overflow: hidden; }
+    .kpi-progress .fill { height: 100%; border-radius: 99px; }
+
+    /* ── Toolbar ── */
+    .rev-toolbar {
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 20px;
+    }
+    .rev-toolbar .search-wrap { position: relative; flex: 1; min-width: 180px; max-width: 320px; }
+    .rev-toolbar .search-wrap .material-icons-outlined { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); font-size: 19px; opacity: 0.4; }
+    .rev-search {
+      width: 100%; padding: 8px 14px 8px 38px; border-radius: 10px;
+      border: 1px solid var(--bs-border-color); background: var(--bs-body-bg);
+      font-size: 13.5px; outline: none; transition: border-color .2s, box-shadow .2s; color: var(--bs-body-color);
+    }
+    .rev-search:focus { border-color: #22c55e; box-shadow: 0 0 0 3px rgba(34,197,94,0.13); }
+    .rev-toolbar { display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding:16px 24px; }
+    .filter-chip {
+      padding: 7px 14px; border-radius: 20px; border: 1px solid var(--bs-border-color);
+      background: var(--bs-body-bg);
+      font-size: 12.5px; font-weight: 600; cursor: pointer;
+      display: flex; align-items: center; gap: 5px;
+      transition: all .2s; color: var(--bs-body-color); white-space: nowrap;
+    }
+    .filter-chip:hover { border-color: #22c55e; color: #16a34a; }
+    .filter-chip.active { background: rgba(34,197,94,0.12); border-color: #22c55e; color: #16a34a; }
+    .filter-chip {
+      padding: 7px 14px; border-radius: 20px;
+      border: 1px solid var(--bs-border-color); background: var(--bs-body-bg);
+      font-size: 12.5px; font-weight: 600; cursor: pointer;
+      display: flex; align-items: center; gap: 5px;
+      transition: all .2s; color: var(--bs-body-color); white-space: nowrap;
+    }
+    .filter-chip:hover { border-color: #2E3F8F; color: #2E3F8F; }
+    .filter-chip.active { background: rgba(55,124,244,0.12); border-color: #2E3F8F; color: #2E3F8F; }
+
+    /* ── Table card  redesigned ── */
+    .rev-table-card {
+      background: var(--bs-body-bg);
+      border: 1px solid var(--bs-border-color);
+      border-radius: 20px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+      overflow: visible;
+    }
+    .rev-table-header {
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid var(--bs-border-color);
+      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    }
+    .rev-table-header h6 { font-size: 15px; font-weight: 700; margin: 0; }
+
+    /* ── New top-of-table header (title + dynamic count badge) ── */
+    .list-header {
+      padding: 18px 24px 14px;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px; flex-wrap: wrap;
+    }
+    .list-title {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 16px; font-weight: 700;
+      color: var(--bs-body-color);
+    }
+    .list-title-icon { font-size: 22px; opacity: 0.85; }
+    .list-count-badge {
+      display: inline-block; padding: 5px 14px;
+      font-size: 12px; font-weight: 700;
+      color: #8b5cf6;
+      background: rgba(139, 92, 246, 0.14);
+      border-radius: 999px;
+      letter-spacing: 0.2px;
+    }
+
+    /* ── Filter section (Mois / Année / Membre) ── */
+    .filter-section {
+      margin: 0 24px 16px;
+      padding: 14px 18px;
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.06), rgba(55,124,244, 0.04));
+      border: 1px solid rgba(139, 92, 246, 0.18);
+      border-radius: 14px;
+    }
+    .filter-label {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 11px; font-weight: 700;
+      letter-spacing: 1px; text-transform: uppercase;
+      color: #8b5cf6;
+      margin-bottom: 10px;
+    }
+    .filter-label .material-icons-outlined { font-size: 14px; }
+    .filter-pills {
+      display: flex; gap: 10px; flex-wrap: wrap;
+    }
+    .filter-pill {
+      position: relative;
+      display: flex; align-items: center; gap: 6px;
+      padding: 9px 14px;
+      min-width: 140px;
+      background: var(--bs-body-bg);
+      border: 1px solid var(--bs-border-color);
+      border-radius: 12px;
+      font-size: 13.5px; font-weight: 500;
+      color: var(--bs-body-color);
+      cursor: pointer; user-select: none;
+      flex: 1 1 140px; max-width: 200px;
+      justify-content: space-between;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .filter-pill:hover {
+      border-color: #8b5cf6;
+      box-shadow: 0 2px 8px rgba(139, 92, 246, 0.12);
+    }
+    .filter-pill .pill-prefix {
+      font-size: 16px; opacity: 0.65; margin-right: 2px;
+    }
+    .filter-pill .pill-text {
+      flex: 1; text-align: left; white-space: nowrap;
+      overflow: hidden; text-overflow: ellipsis;
+    }
+    .filter-pill .caret { font-size: 18px; opacity: 0.5; }
+    /* Variante input direct (filtre Année) : clic + saisie, pas de menu. */
+    .filter-pill-input { padding: 0; cursor: text; }
+    .filter-pill-input:hover { border-color: #8b5cf6; box-shadow: 0 2px 8px rgba(139,92,246,0.12); }
+    .filter-pill-input:focus-within { border-color: #8b5cf6; box-shadow: 0 0 0 3px rgba(139,92,246,0.15); }
+    .filter-pill .pill-input {
+      width: 100%; border: none; background: transparent; outline: none;
+      padding: 9px 14px;
+      font-size: 13.5px; font-weight: 500;
+      color: var(--bs-body-color);
+      font-family: inherit;
+    }
+    .filter-pill .pill-input::placeholder { color: var(--bs-body-color); opacity: 0.55; font-weight: 500; }
+    /* Affiche les flèches up/down (stepper année) — même style que les stats. */
+    .filter-pill .pill-input::-webkit-outer-spin-button,
+    .filter-pill .pill-input::-webkit-inner-spin-button {
+      -webkit-appearance: auto; opacity: 1; margin: 0;
+    }
+    .filter-pill .pill-input[type=number] { -moz-appearance: auto; appearance: auto; }
+    .filter-menu {
+      position: absolute; top: 105%; left: 0; right: 0; margin: 0;
+      padding: 4px; list-style: none;
+      background: var(--bs-body-bg);
+      border: 1px solid var(--bs-border-color);
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(139, 92, 246, 0.18);
+      z-index: 50; max-height: 280px; overflow-y: auto;
+    }
+    .filter-menu li {
+      padding: 8px 12px; border-radius: 8px;
+      font-size: 13px; font-weight: 500;
+      color: var(--bs-body-color);
+      cursor: pointer;
+    }
+    .filter-menu li:hover { background: rgba(139, 92, 246, 0.08); color: #8b5cf6; }
+    .filter-menu li.active {
+      background: linear-gradient(135deg, #8b5cf6, #a78bfa);
+      color: #fff;
+    }
+
+    /* Professional table */
+    .rev-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+    .rev-table thead tr {
+      background: rgba(55,124,244,0.04);
+    }
+    .rev-table thead th {
+      padding: 13px 18px;
+      font-size: 11px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.9px;
+      color: var(--bs-body-color); opacity: 0.5;
+      border-bottom: 2px solid var(--bs-border-color);
+      white-space: nowrap; background: transparent;
+    }
+    .rev-table thead th:first-child { padding-left: 24px; }
+    .rev-table thead th:last-child  { padding-right: 24px; }
+
+    /* Zebra striping */
+    .rev-table tbody tr:nth-child(even) {
+      background: rgba(55,124,244,0.025);
+    }
+    .rev-table tbody tr {
+      transition: background .18s, transform .15s;
+    }
+    .rev-table tbody tr:last-child { border-bottom: none; }
+    .rev-table tbody tr:hover {
+      background: rgba(55,124,244,0.07) !important;
+    }
+    .rev-table td {
+      padding: 14px 18px; font-size: 13.5px; vertical-align: middle;
+    }
+    .rev-table tbody tr:last-child td { border-bottom: none; }
+    .rev-table td:first-child { padding-left: 24px; }
+    .rev-table td:last-child  { padding-right: 24px; }
+
+
+
+    /* Share bar (% du total) */
+    .share-bar-wrap { display: flex; align-items: center; gap: 8px; }
+    .share-bar {
+      flex: 1; height: 6px; border-radius: 99px;
+      background: var(--bs-border-color); overflow: hidden;
+    }
+    .share-bar .fill {
+      height: 100%; border-radius: 99px;
+      transition: width .6s cubic-bezier(.4,0,.2,1);
+    }
+    .share-pct { font-size: 11.5px; font-weight: 700; min-width: 32px; text-align: right; opacity: 0.7; }
+
+    /* Dropdown action menu */
+    .tbl-action-btn {
+      width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--bs-border-color);
+      background: transparent; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+      transition: all .18s; color: var(--bs-body-color);
+    }
+    .tbl-action-btn:hover { background: rgba(55,124,244,0.1); border-color: #2E3F8F; color: #2E3F8F; }
+    .tbl-action-btn .material-icons-outlined { font-size: 16px; }
+    .tbl-dropdown { position: relative; display: inline-block; }
+    .tbl-dropdown-menu {
+      display: none; position: absolute; right: 0; top: calc(100% + 4px);
+      background: var(--bs-body-bg); border: 1px solid var(--bs-border-color);
+      border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+      min-width: 150px; z-index: 100; overflow: hidden;
+      animation: dropIn .15s ease;
+    }
+    &#64;keyframes dropIn { from{opacity:0;transform:translateY(-6px)} to{opacity:1;transform:translateY(0)} }
+    .tbl-dropdown.open .tbl-dropdown-menu { display: block; }
+    .tbl-dd-item {
+      display: flex; align-items: center; gap: 9px;
+      padding: 9px 14px; font-size: 13px; font-weight: 500;
+      cursor: pointer; transition: background .15s; color: var(--bs-body-color);
+      text-decoration: none;
+    }
+    .tbl-dd-item:hover { background: rgba(55,124,244,0.07); }
+    .tbl-dd-item.danger { color: #ef4444; }
+    .tbl-dd-item.danger:hover { background: rgba(239,68,68,0.07); }
+    .tbl-dd-item .material-icons-outlined { font-size: 16px; opacity: 0.75; }
+    .tbl-dd-divider { height: 1px; background: var(--bs-border-color); margin: 3px 0; }
+
+    /* Remove number input spinners */
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    input[type=number] { -moz-appearance: textfield; }
+
+    /* Category badge */
+    .cat-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 11px; border-radius: 20px;
+      font-size: 11.5px; font-weight: 600;
+    }
+    .cat-badge .cat-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    .cat-salaire     { background: rgba(34,197,94,.12);  color: #16a34a; }
+    .cat-salaire .cat-dot    { background: #16a34a; }
+    .cat-freelance   { background: rgba(55,124,244,.12); color: #377CF4; }
+    .cat-freelance .cat-dot  { background: #377CF4; }
+    .cat-aide        { background: rgba(245,158,11,.12); color: #d97706; }
+    .cat-aide .cat-dot       { background: #d97706; }
+    .cat-investissement { background: rgba(124,58,237,.12); color: #7c3aed; }
+    .cat-investissement .cat-dot { background: #7c3aed; }
+    .cat-location    { background: rgba(6,182,212,.12);  color: #0891b2; }
+    .cat-location .cat-dot   { background: #0891b2; }
+    .cat-autre       { background: rgba(148,163,184,.12);color: #64748b; }
+    .cat-autre .cat-dot      { background: #64748b; }
+
+    /* Type badge — Variable (défaut) / Fixe */
+    .period-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 600;
+      background: rgba(245,158,11,0.10); color: #d97706; border: 1px solid rgba(245,158,11,0.22);
+    }
+    .period-badge.fixe { background: rgba(34,197,94,0.10); color: #16a34a; border-color: rgba(34,197,94,0.22); }
+
+    /* Amount highlight */
+    .amount-cell { font-size: 14.5px; font-weight: 700; color: #22c55e; white-space: nowrap; }
+
+    /* Source icon */
+    .source-icon {
+      width: 36px; height: 36px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; color: white; flex-shrink: 0;
+    }
+
+    /* Action buttons */
+    .tbl-btn {
+      width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--bs-border-color);
+      background: transparent; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+      transition: all .18s; color: var(--bs-body-color);
+    }
+    .tbl-btn:hover.edit  { background: rgba(55,124,244,0.12); border-color: #2E3F8F; color: #2E3F8F; }
+    .tbl-btn:hover.del   { background: rgba(239,68,68,0.12);  border-color: #ef4444; color: #ef4444; }
+    .tbl-btn .material-icons-outlined { font-size: 15px; }
+
+    /* ── Breakdown panel ── */
+    .breakdown-card {
+      background: var(--bs-body-bg);
+      border: 1px solid var(--bs-border-color);
+      border-radius: 16px;
+      box-shadow: 0 2px 14px rgba(0,0,0,0.12);
+      padding: 20px;
+    }
+    .breakdown-card h6 { font-size: 14px; font-weight: 700; margin-bottom: 16px; }
+    .bk-row { margin-bottom: 14px; }
+    .bk-row:last-child { margin-bottom: 0; }
+    .bk-label { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: 13px; }
+    .bk-label .name { display: flex; align-items: center; gap: 7px; font-weight: 500; }
+    .bk-label .val { font-weight: 700; font-size: 13.5px; }
+    .bk-bar { height: 7px; border-radius: 99px; background: rgba(255,255,255,0.08); overflow: hidden; }
+    .bk-bar .fill { height: 100%; border-radius: 99px; transition: width .7s ease; }
+
+    /* ── Mini chart ── */
+    .chart-card {
+      background: var(--bs-body-bg);
+      border: 1px solid var(--bs-border-color);
+      border-radius: 16px;
+      box-shadow: 0 2px 14px rgba(0,0,0,0.12);
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    .chart-card h6 { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+    .chart-card .sub { font-size: 12px; opacity: 0.55; margin-bottom: 16px; }
+
+    /* ── Member allocation ── */
+    .member-alloc-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px; border-radius: 12px;
+      background: rgba(55,124,244,0.05);
+      border: 1px solid rgba(55,124,244,0.1);
+      margin-bottom: 8px; transition: background .18s;
+    }
+    .member-alloc-row:last-child { margin-bottom: 0; }
+    .member-alloc-row:hover { background: rgba(55,124,244,0.1); }
+    .alloc-avatar {
+      width: 34px; height: 34px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700; color: white; flex-shrink: 0;
+    }
+    .alloc-name { font-size: 13px; font-weight: 600; flex: 1; }
+    .alloc-val { font-size: 13.5px; font-weight: 700; color: #22c55e; }
+
+    /* ── Modal ── */
+    .fb-modal .modal-content { border-radius: 20px; border: 1px solid var(--bs-border-color); overflow: hidden; }
+    .fb-modal .modal-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--bs-border-color); }
+    .fb-modal .modal-title { font-size: 16px; font-weight: 700; }
+    .fb-modal .modal-body { padding: 20px 24px; }
+    .fb-modal .modal-footer { padding: 14px 24px; border-top: 1px solid var(--bs-border-color); }
+    .fb-modal .form-label { font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.6; margin-bottom: 6px; }
+    .fb-modal .form-control, .fb-modal .form-select {
+      border-radius: 10px; padding: 9px 14px; font-size: 13.5px;
+      border: 1px solid var(--bs-border-color);
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .fb-modal .form-control:focus, .fb-modal .form-select:focus {
+      border-color: #2E3F8F; box-shadow: 0 0 0 3px rgba(55,124,244,0.13);
+    }
+    .fb-modal .input-group-text { border-radius: 10px 0 0 10px; background: rgba(55,124,244,0.08); border-color: var(--bs-border-color); }
+    .fb-modal .input-group .form-control { border-radius: 0 10px 10px 0; }
+
+    /* ── Empty state ── */
+    .rev-empty {
+      display: none; flex-direction: column; align-items: center;
+      padding: 60px 20px; text-align: center;
+    }
+    .rev-empty.show { display: flex; }
+    .rev-empty-icon {
+      width: 100px; height: 100px; border-radius: 28px;
+      background: linear-gradient(135deg,rgba(34,197,94,0.1),rgba(22,163,74,0.05));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 44px; color: #22c55e; margin: 0 auto 22px;
+    }
+
+    /* ── Delete confirm ── */
+    .del-modal-body { text-align: center; padding: 30px 24px; }
+    .del-icon-wrap { width: 68px; height: 68px; border-radius: 20px; background: rgba(239,68,68,0.1); display: flex; align-items: center; justify-content: center; margin: 0 auto 18px; font-size: 30px; color: #ef4444; }
+
+    /* ── Toast ── */
+    #fb-toast { border-radius: 14px; min-width: 250px; }
+
+    /* ── Animations ── */
+    &#64;keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+    .rev-table tbody tr { animation: fadeUp .3s ease both; }
+
+    /* ── Responsive ── */
+    &#64;media(max-width:991px) { .sidebar-right { display: none; } }
+    &#64;media(max-width:600px) {
+      .kpi-grid { grid-template-columns: 1fr 1fr !important; }
+      .rev-toolbar { flex-direction: column; align-items: stretch; }
+      .rev-toolbar .search-wrap { max-width: none; }
+      .hide-mobile { display: none !important; }
+    }
+  </style>
+
+  <div class="main-content">
+
+    <!-- ── PAGE HEADER — flush to the top of the content area ── -->
+    <div class="d-flex align-items-start justify-content-between gap-3 flex-wrap mb-3"
+         style="margin-top:-8px;">
+      <div>
+        <h3 class="mb-1 fw-bold" style="font-size:26px;letter-spacing:-0.3px;margin-top:0;">
+          <span style="margin-right:6px">💼</span>Gestion des Revenus
+        </h3>
+        <p class="mb-0 text-secondary" style="font-size:13.5px">
+          Suivez et gérez tous les revenus de votre famille
+          <span *ngIf="isConsultant" style="display:inline-flex;align-items:center;gap:4px;margin-left:8px;padding:3px 10px;border-radius:999px;background:rgba(16,185,129,.12);color:#059669;font-size:11.5px;font-weight:700;">
+            <span class="material-icons-outlined" style="font-size:13px">visibility</span>Lecture seule
+          </span>
+        </p>
+      </div>
+      <button *ngIf="canEdit" class="btn btn-grd btn-grd-primary d-flex align-items-center gap-2"
+              (click)="openAddModal()"
+              style="border-radius:10px;font-size:13.5px;padding:10px 20px;white-space:nowrap;">
+        <span class="material-icons-outlined" style="font-size:18px">add</span>Ajouter un revenu
+      </button>
+    </div>
+
+    <!-- ── Hero KPI Banner + sous-cartes Fixes/Variables — port 1:1 de la page React mobile.
+         Connecté au backend via `this.revenus` (GET /revenus/compte/{id}) qui alimente
+         tous les getters dérivés (mois courant / année courante / fixes / variables). ── -->
+    <style>
+      /* Banner bleu — même gradient + typographie que la carte "Reste à vivre"
+         du Home (.rav-card). Polices alignées sur le template web (Noto Sans,
+         tailles fixes, mêmes graduations que .rav-label / .rav-amount). */
+      .rev-kpi-banner {
+        background: linear-gradient(135deg, #377CF4 0%, #2E3F8F 100%);
+        color: #fff;
+        border-radius: 22px;
+        padding: 1.25rem 1.6rem;
+        box-shadow: 0 8px 28px rgba(55,124,244,0.35);
+        position: relative;
+        overflow: hidden;
+        font-family: "Noto Sans", sans-serif;
+      }
+      .rev-kpi-banner::after {
+        content: ''; position: absolute; right: -60px; top: -60px;
+        width: 260px; height: 260px; border-radius: 50%;
+        background: radial-gradient(circle, rgba(255,255,255,0.10), transparent 70%);
+        pointer-events: none;
+      }
+      /* ── Accents colorés sur le banner bleu (couleurs alignées sur les
+            badges/pills du reste du template : success vert, warning ambre,
+            info cyan) pour casser le monochrome blanc. ── */
+      .rev-kpi-title {
+        font-size: 13px; font-weight: 700; letter-spacing: 0.3px;
+        color: #fff;
+        margin: 0 0 10px;
+      }
+      .rev-kpi-title .material-icons-outlined { color: #fde68a; }
+
+      .rev-kpi-label {
+        font-size: 11px; font-weight: 600; letter-spacing: 0.6px;
+        text-transform: uppercase; color: #bae6fd;
+        margin: 0 0 6px;
+      }
+      .rev-kpi-label .material-icons-outlined { color: #fde68a; }
+
+      .rev-kpi-amount {
+        font-size: 34px;
+        font-weight: 800; letter-spacing: -1px; line-height: 1.05;
+        /* gradient blanc → ambre clair, suit le ton du Home rav-budget-pill */
+        background: linear-gradient(90deg, #ffffff 0%, #fef3c7 60%, #fde68a 100%);
+        -webkit-background-clip: text; background-clip: text;
+        -webkit-text-fill-color: transparent; color: transparent;
+        text-shadow: 0 2px 12px rgba(254,243,199,0.25);
+        margin: 0 0 10px;
+      }
+      .rev-kpi-amount .unit {
+        font-size: 16px; margin-left: 5px; font-weight: 600; vertical-align: middle;
+        background: none; -webkit-text-fill-color: #fde68a; color: #fde68a;
+      }
+
+      .rev-kpi-badge {
+        display: inline-flex; align-items: center; gap: 6px;
+        background: rgba(34,197,94,0.22); border: 1px solid rgba(187,247,208,0.55);
+        border-radius: 999px; padding: 6px 14px;
+        font-size: 12.5px; font-weight: 600; color: #bbf7d0;
+        backdrop-filter: blur(6px);
+      }
+      .rev-kpi-badge .material-icons-outlined { color: #86efac; }
+
+      .rev-kpi-right { text-align: right; }
+      .rev-kpi-right .label-small {
+        font-size: 11px; font-weight: 600; letter-spacing: 0.6px;
+        text-transform: uppercase; color: #bae6fd;
+        margin: 0 0 4px;
+      }
+      .rev-kpi-right .label-small .material-icons-outlined { color: #fde68a; }
+
+      .rev-kpi-right .amount-small {
+        font-size: 20px; font-weight: 700; letter-spacing: -0.3px;
+        color: #fde68a;
+        margin: 0;
+      }
+      .rev-kpi-right .amount-small .unit-small {
+        font-size: 12px; color: #fef3c7; margin-left: 4px; font-weight: 500;
+      }
+      .rev-kpi-right .hint {
+        font-size: 11.5px; font-weight: 500; color: #bae6fd; margin: 4px 0 0;
+      }
+
+      /* Cartes Fixes / Variables — typographie alignée sur les KPI cards
+         existantes (kpi-label / kpi-value / kpi-sub du même fichier). */
+      .rev-sub-card {
+        background: var(--bs-body-bg, #fff);
+        border-radius: 18px;
+        padding: 1rem 1.25rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        border-top: 3px solid var(--accent);
+        min-height: 130px;
+        display: flex; flex-direction: column; justify-content: space-between;
+        font-family: "Noto Sans", sans-serif;
+      }
+      .rev-sub-card.fixes     { --accent: #f59e0b; }
+      .rev-sub-card.variables { --accent: #a855f7; }
+      .rev-sub-head {
+        display: flex; align-items: center; gap: 10px; margin-bottom: 4px;
+      }
+      .rev-sub-icon {
+        width: 40px; height: 40px; border-radius: 12px;
+        display: inline-flex; align-items: center; justify-content: center;
+        font-size: 20px;
+        color: #fff;
+      }
+      .rev-sub-card.fixes .rev-sub-icon     { background: linear-gradient(135deg,#d97706,#f59e0b); }
+      .rev-sub-card.variables .rev-sub-icon { background: linear-gradient(135deg,#7e22ce,#a855f7); }
+      /* Mêmes graduations que les .kpi-label / .kpi-value / .kpi-sub du
+         template web — gras + clair, comme les autres cartes du site. */
+      .rev-sub-title {
+        font-size: 11.5px; font-weight: 600; color: var(--accent);
+        letter-spacing: 0.5px; text-transform: uppercase; opacity: 0.85;
+      }
+      .rev-sub-amount {
+        font-size: 24px; font-weight: 800; color: var(--bs-body-color,#1e293b);
+        line-height: 1; margin: 0;
+      }
+      .rev-sub-amount .unit { font-size: 11.5px; color: #64748b; font-weight: 500; margin-left: 5px; opacity: 0.7; }
+      .rev-sub-foot {
+        display: flex; align-items: center; justify-content: space-between;
+        margin-top: 8px; font-size: 11.5px; font-weight: 500; color: #64748b; opacity: 0.85;
+      }
+      .rev-sub-foot .pill {
+        font-size: 11.5px; font-weight: 600; color: var(--accent);
+        background: color-mix(in srgb, var(--accent) 12%, transparent);
+        border-radius: 8px; padding: 3px 10px;
+      }
+    </style>
+
+    <!-- Hero KPI Banner -->
+    <div class="row g-3 mb-3">
+      <div class="col-12">
+        <div class="rev-kpi-banner">
+          <p class="rev-kpi-title">
+            <span class="material-icons-outlined" style="vertical-align:middle;font-size:18px;margin-right:6px;">
+              {{ selectedMemberId === 'all' ? 'groups' : 'person' }}
+            </span>{{ heroTitle }}
+          </p>
+          <div class="d-flex align-items-end justify-content-between flex-wrap gap-3">
+            <!-- Gauche : total mois courant -->
+            <div style="flex:1 1 auto">
+              <p class="rev-kpi-label">
+                <span class="material-icons-outlined" style="font-size:13px;vertical-align:middle;margin-right:4px;">calendar_today</span>
+                Revenus du mois · {{ moisLabel }} {{ targetYear }}
+              </p>
+              <h1 class="rev-kpi-amount">
+                {{ totalMoisCourant | number:'1.0-0' }}<span class="unit">DT</span>
+              </h1>
+              <span class="rev-kpi-badge">
+                <span class="material-icons-outlined" style="font-size:14px">arrow_upward</span>
+                {{ nbSourcesMois }} source{{ nbSourcesMois !== 1 ? 's' : '' }}
+              </span>
+            </div>
+            <!-- Droite : total annuel -->
+            <div class="rev-kpi-right" style="flex-shrink:0">
+              <p class="label-small">
+                <span class="material-icons-outlined" style="font-size:12px;vertical-align:middle;margin-right:3px;">show_chart</span>
+                Total {{ targetYear }}
+              </p>
+              <p class="amount-small">
+                {{ totalAnneeCourante | number:'1.0-0' }}<span class="unit-small">DT / an</span>
+              </p>
+              <p class="hint">calculé sur {{ nbSourcesAnnee }} revenu{{ nbSourcesAnnee !== 1 ? 's' : '' }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sous-cartes : Revenus Fixes / Revenus Variables -->
+    <div class="row g-3 mb-4">
+      <div class="col-12 col-sm-6">
+        <div class="rev-sub-card fixes h-100">
+          <div class="rev-sub-head">
+            <div class="rev-sub-icon"><span class="material-icons-outlined">lock</span></div>
+            <span class="rev-sub-title">Revenus Fixes</span>
+          </div>
+          <div>
+            <h4 class="rev-sub-amount">
+              {{ totalFixesMois | number:'1.0-0' }}<span class="unit">DT / mois</span>
+            </h4>
+            <div class="rev-sub-foot">
+              <span>{{ nbFixesPostesMois }} poste{{ nbFixesPostesMois !== 1 ? 's' : '' }}</span>
+              <span class="pill">{{ totalFixesAnnuel | number:'1.0-0' }} DT / an</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-sm-6">
+        <div class="rev-sub-card variables h-100">
+          <div class="rev-sub-head">
+            <div class="rev-sub-icon"><span class="material-icons-outlined">swap_horiz</span></div>
+            <span class="rev-sub-title">Revenus Variables</span>
+          </div>
+          <div>
+            <h4 class="rev-sub-amount">
+              {{ totalVarsMois | number:'1.0-0' }}<span class="unit">DT / mois</span>
+            </h4>
+            <div class="rev-sub-foot">
+              <span>{{ nbVarsPostesMois }} poste{{ nbVarsPostesMois !== 1 ? 's' : '' }}</span>
+              <span class="pill">{{ totalVarsAnnuel | number:'1.0-0' }} DT / an</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── List ── -->
+    <div class="row g-3">
+      <div class="col-12">
+
+        <div class="rev-table-card">
+          <!-- New table header: title + dynamic count badge -->
+          <div class="list-header">
+            <div class="list-title">
+              <span class="material-icons-outlined list-title-icon">view_list</span>
+              <span>Liste des revenus</span>
+            </div>
+            <span class="list-count-badge">{{ filteredRevenus.length }} revenus</span>
+          </div>
+
+          <!-- Filter section: Mois / Année / Membre (each filters the table live) -->
+          <div class="filter-section">
+            <div class="filter-label">
+              <span class="material-icons-outlined">filter_alt</span>
+              FILTRER PAR
+            </div>
+            <div class="filter-pills">
+              <div class="filter-pill" (click)="toggleMonthMenu($event)">
+                <span class="pill-text">{{ monthDropdownLabel(selectedMonth) }}</span>
+                <span class="material-icons-outlined caret">expand_more</span>
+                <ul class="filter-menu" *ngIf="monthOpen" (click)="$event.stopPropagation()">
+                  <li [class.active]="selectedMonth === 'all'" (click)="setMonth('all', $event)">Tous les mois</li>
+                  <li *ngFor="let m of months"
+                      [class.active]="selectedMonth === m.value"
+                      (click)="setMonth(m.value, $event)">{{ m.label }}</li>
+                </ul>
+              </div>
+
+              <!-- Année : pill input direct — clic + saisie libre. -->
+              <div class="filter-pill filter-pill-input"
+                   (click)="$any($event.currentTarget).querySelector('input').focus()">
+                <input type="number"
+                       class="pill-input"
+                       inputmode="numeric" min="1900" max="2999" step="1"
+                       placeholder="Année"
+                       [value]="yearInputValue"
+                       (click)="$event.stopPropagation()"
+                       (input)="setYearFromInput($any($event.target).value, $event)">
+              </div>
+
+              <div class="filter-pill" (click)="toggleMemberMenu($event)">
+                <span class="material-icons-outlined pill-prefix">group</span>
+                <span class="pill-text">{{ memberDropdownLabel(selectedMemberId) }}</span>
+                <span class="material-icons-outlined caret">expand_more</span>
+                <ul class="filter-menu" *ngIf="memberOpen" (click)="$event.stopPropagation()">
+                  <li [class.active]="selectedMemberId === 'all'" (click)="setMemberFilter('all', $event)">Tous les membres</li>
+                  <li *ngFor="let m of memberOptions"
+                      [class.active]="selectedMemberId === m.id"
+                      (click)="setMemberFilter(m.id, $event)">{{ m.name }}</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Loading / error -->
+          <div *ngIf="loading" class="rev-toolbar" style="padding-top:0;opacity:0.65;">
+            <span class="material-icons-outlined">hourglass_top</span> Chargement…
+          </div>
+          <div *ngIf="errorMsg && !loading" class="rev-toolbar" style="padding-top:0;color:#ef4444;">
+            <span class="material-icons-outlined">error_outline</span> {{ errorMsg }}
+            <button class="filter-chip" (click)="reload()">Réessayer</button>
+          </div>
+
+          <!-- Table -->
+          <div class="table-responsive" *ngIf="!loading && filteredRevenus.length > 0">
+            <table class="rev-table">
+              <thead>
+                <tr>
+                  <th class="hide-mobile">Membre</th>
+                  <th>Catégorie</th>
+                  <th class="hide-mobile">Type</th>
+                  <th>Montant</th>
+                  <th class="hide-mobile">Date</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let r of filteredRevenus">
+                  <td class="hide-mobile">
+                    <div class="d-flex align-items-center gap-2">
+                      <ng-container *ngIf="memberAvatar(r) as avatar; else initInit">
+                        <img [src]="avatar" alt="avatar"
+                             class="alloc-avatar"
+                             style="object-fit:cover;border-radius:8px;">
+                      </ng-container>
+                      <ng-template #initInit>
+                        <span class="alloc-avatar"
+                              style="background:linear-gradient(135deg,#7c3aed,#a855f7)">
+                          {{ memberInitials(r) }}
+                        </span>
+                      </ng-template>
+                      <span>{{ memberName(r) }}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="cat-badge cat-autre">
+                      <span class="cat-dot"></span>{{ r.categorieName || 'Autre' }}
+                    </span>
+                  </td>
+                  <td class="hide-mobile">
+                    <span class="period-badge" [class.fixe]="isFixe(r)">{{ kindLabel(r) }}</span>
+                  </td>
+                  <td class="amount-cell" style="color:#16a34a !important;">+{{ r.amount | number:'1.0-0' }} DT</td>
+                  <td class="hide-mobile">{{ formatDate(r.perceptionDate) }}</td>
+                  <td>{{ r.description || '—' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Empty state -->
+          <div class="rev-empty" [class.show]="!loading && filteredRevenus.length === 0">
+            <div class="rev-empty-icon"><span class="material-icons-outlined">account_balance_wallet</span></div>
+            <h5 class="fw-bold mb-2">Aucun revenu enregistré</h5>
+            <p class="text-secondary mb-4" style="max-width:300px">Commencez par ajouter vos premières sources de revenus pour suivre votre budget familial.</p>
+            <button *ngIf="canEdit" class="btn btn-grd btn-grd-primary d-flex align-items-center gap-2 mx-auto"
+                    (click)="openAddModal()" style="border-radius:10px;">
+              <span class="material-icons-outlined" style="font-size:18px">add</span>Ajouter un revenu
+            </button>
+          </div>
+        </div><!-- /rev-table-card -->
+      </div>
+    </div>
+
+<!-- ─── Dialogs ─── -->
+<app-revenu-modal
+  [(open)]="modalOpen"
+  [editing]="editingRevenu"
+  (saved)="onSaved()"></app-revenu-modal>
+
+<!-- Delete confirmation -->
+<div class="fb-rv-overlay" *ngIf="confirmDeleteId !== null" (click)="cancelDelete()"
+     style="position:fixed;inset:0;z-index:1090;background:rgba(2,6,23,0.6);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:20px;">
+  <div class="rev-table-card" style="max-width:380px;padding:28px 26px;text-align:center;" (click)="$event.stopPropagation()">
+    <div style="width:64px;height:64px;border-radius:18px;background:rgba(239,68,68,0.12);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:28px;color:#ef4444;">
+      <span class="material-icons-outlined">delete_forever</span>
+    </div>
+    <h5 class="fw-bold mb-2" style="font-size:16px;">Supprimer ce revenu ?</h5>
+    <p class="text-secondary mb-3" style="font-size:13.5px;">Cette action est irréversible.</p>
+    <div class="d-flex gap-2 justify-content-center">
+      <button type="button" class="btn btn-outline-danger" (click)="cancelDelete()"
+              style="border-radius:10px;font-size:13.5px;padding:8px 18px;">Annuler</button>
+      <button type="button" class="btn btn-grd btn-grd-danger" (click)="confirmDelete()"
+              style="border-radius:10px;font-size:13.5px;padding:8px 18px;">Supprimer</button>
+    </div>
+  </div>
+</div>
+
+  </div><!-- /main-content -->

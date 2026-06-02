@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -s -X POST http://localhost:8081/authentification/register-family -H \"Content-Type: application/json\" -d '{\"familyName\":\"probetest\",\"admin\":{\"username\":\"probe.user\",\"password\":\"probe123.\",\"firstName\":\"probe\",\"lastName\":\"user\",\"phone\":\"+21600000001\"}}')",
+      "PowerShell($pidOnPort = \\(Get-NetTCPConnection -LocalPort 8081 -State Listen -ErrorAction SilentlyContinue | Select-Object -First 1\\).OwningProcess; if \\($pidOnPort\\) { Write-Output \"Killing PID $pidOnPort\"; Stop-Process -Id $pidOnPort -Force; Start-Sleep -Seconds 2; Write-Output \"Killed.\" } else { Write-Output \"Nothing on 8081.\" })",
+      "Bash(export JAVA_HOME=\"/c/Program Files/Eclipse Adoptium/jdk-21.0.10.7-hotspot\")",
+      "Bash(export PATH=\"$JAVA_HOME/bin:$PATH\")",
+      "Bash(./mvnw -q -DskipTests spring-boot:run)",
+      "Bash(tee /tmp/backend.log)"
+    ]
+  }
+}

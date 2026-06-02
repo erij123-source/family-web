@@ -1,0 +1,159 @@
+/* Global styles. All theme CSS is loaded via <link> tags in index.html. */
+html, body { margin: 0; padding: 0; }
+
+/* ──────────────────────────────────────────────────────────────────────
+   Auth pages — overrides de thème pour l'intérieur du panneau
+   (login / register / register-step2 / forgot / reset).
+
+   Les pages auth déclarent leur CSS de base en inline avec un look sombre
+   par défaut (correspond aux thèmes blue-theme / dark / semi-dark). Les
+   règles ci-dessous ne s'activent QUE pour les thèmes clairs ou bordés
+   et viennent surcharger l'intérieur de la carte (background, texte,
+   champs de saisie) — l'extérieur de la page suit déjà Bootstrap via
+   data-bs-theme.
+
+   Sélecteurs préfixés par [data-bs-theme=...] sur <html> + ID auth
+   pour assurer une spécificité supérieure aux styles inline scopés
+   par classe.
+   ────────────────────────────────────────────────────────────────────── */
+
+/* === LIGHT ===
+   Le fond global du body en thème clair est lui aussi blanc/très clair :
+   sans contraste, la carte disparaît. On force donc :
+   - un fond légèrement coloré sur la page (.fb-auth-page) pour faire
+     ressortir la carte
+   - une carte blanche pure avec ombre nette + bordure subtile
+   - du texte foncé bien visible pour labels / inputs */
+[data-bs-theme="light"] .fb-auth-page {
+  background: linear-gradient(135deg, #eef2ff 0%, #f1f5f9 50%, #e0f2fe 100%);
+}
+[data-bs-theme="light"] .fb-card-inner {
+  background-image: none;
+  background-color: #ffffff;
+  color: #0f172a;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.12);
+}
+[data-bs-theme="light"] .fb-title {
+  color: #0f172a;
+}
+[data-bs-theme="light"] .fb-field-header label {
+  color: #1f2937;
+}
+[data-bs-theme="light"] .fb-input {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+}
+[data-bs-theme="light"] .fb-input:focus-within {
+  background: #ffffff;
+  border-color: #3B82F6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18);
+}
+[data-bs-theme="light"] .fb-input .icon,
+[data-bs-theme="light"] .fb-input .btn-eye {
+  color: #6b7280;
+}
+[data-bs-theme="light"] .fb-input input {
+  color: #0f172a;
+}
+/* `!important` impératif : les pages register / register-step2 /
+   forgot-password déclarent leur placeholder avec `!important` dans
+   leur <style> inline, sans cette surcharge le texte resterait blanc
+   translucide donc invisible sur fond clair. */
+[data-bs-theme="light"] .fb-input input::placeholder,
+[data-bs-theme="light"] .fb-input input::-webkit-input-placeholder,
+[data-bs-theme="light"] .fb-input input::-moz-placeholder,
+[data-bs-theme="light"] .fb-input input:-ms-input-placeholder {
+  color: #1e293b !important;   /* slate-800, très sombre, max lisibilité */
+  opacity: 1 !important;
+}
+[data-bs-theme="light"] .fb-input input:-webkit-autofill,
+[data-bs-theme="light"] .fb-input input:-webkit-autofill:hover,
+[data-bs-theme="light"] .fb-input input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #0f172a !important;
+  caret-color: #0f172a;
+}
+[data-bs-theme="light"] .fb-footer {
+  color: #475569;
+}
+
+/* Sous-titres, descriptions de sections, libellés transparents :
+   les CSS inline utilisent rgba(255,255,255,X) qui devient INVISIBLE
+   sur un fond clair. On force du gris foncé bien lisible. */
+[data-bs-theme="light"] .fb-subtitle,
+[data-bs-theme="light"] .fb-section-desc {
+  color: #475569; /* slate-600 */
+}
+[data-bs-theme="light"] .fb-step.inactive .fb-step-circle {
+  background: #e2e8f0;
+  color: #64748b;
+}
+[data-bs-theme="light"] .fb-step.inactive .fb-step-label {
+  color: #64748b;
+}
+[data-bs-theme="light"] .fb-step.active .fb-step-label {
+  color: #1e293b;
+}
+[data-bs-theme="light"] .fb-member-info .username {
+  color: #64748b;
+}
+[data-bs-theme="light"] .fb-empty .material-icons-outlined {
+  color: #cbd5e1;
+}
+[data-bs-theme="light"] .fb-empty p {
+  color: #64748b;
+}
+/* Boutons "secondaire" / "annuler" rendus en blanc translucide : on
+   les passe en gris foncé. */
+[data-bs-theme="light"] button[style*="rgba(255,255,255,0.6)"],
+[data-bs-theme="light"] button[style*="rgba(255, 255, 255, 0.6)"] {
+  color: #475569 !important;
+}
+
+/* === BORDERED (bodered-theme) === */
+[data-bs-theme="bodered-theme"] .fb-auth-page {
+  background: linear-gradient(135deg, #eef2ff 0%, #f1f5f9 50%, #e0f2fe 100%);
+}
+[data-bs-theme="bodered-theme"] .fb-card-inner {
+  background-image: none;
+  background-color: #ffffff;
+  color: #0f172a;
+  border: 1px solid #cbd5e1;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+}
+[data-bs-theme="bodered-theme"] .fb-title { color: #0f172a; }
+[data-bs-theme="bodered-theme"] .fb-field-header label { color: #1f2937; }
+[data-bs-theme="bodered-theme"] .fb-input {
+  background: #ffffff;
+  border-color: #cbd5e1;
+}
+[data-bs-theme="bodered-theme"] .fb-input:focus-within {
+  border-color: #3B82F6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18);
+}
+[data-bs-theme="bodered-theme"] .fb-input .icon,
+[data-bs-theme="bodered-theme"] .fb-input .btn-eye { color: #6b7280; }
+[data-bs-theme="bodered-theme"] .fb-input input { color: #0f172a; }
+[data-bs-theme="bodered-theme"] .fb-input input::placeholder,
+[data-bs-theme="bodered-theme"] .fb-input input::-webkit-input-placeholder,
+[data-bs-theme="bodered-theme"] .fb-input input::-moz-placeholder,
+[data-bs-theme="bodered-theme"] .fb-input input:-ms-input-placeholder {
+  color: #1e293b !important;
+  opacity: 1 !important;
+}
+[data-bs-theme="bodered-theme"] .fb-footer { color: #475569; }
+
+[data-bs-theme="bodered-theme"] .fb-subtitle,
+[data-bs-theme="bodered-theme"] .fb-section-desc { color: #475569; }
+[data-bs-theme="bodered-theme"] .fb-step.inactive .fb-step-circle { background: #e2e8f0; color: #64748b; }
+[data-bs-theme="bodered-theme"] .fb-step.inactive .fb-step-label { color: #64748b; }
+[data-bs-theme="bodered-theme"] .fb-step.active .fb-step-label { color: #1e293b; }
+[data-bs-theme="bodered-theme"] .fb-member-info .username { color: #64748b; }
+[data-bs-theme="bodered-theme"] .fb-empty .material-icons-outlined { color: #cbd5e1; }
+[data-bs-theme="bodered-theme"] .fb-empty p { color: #64748b; }
+
+/* === DARK pur (renforce le contraste face au défaut blue-theme) === */
+[data-bs-theme="dark"] .fb-card-inner {
+  background-image: none;
+  background-color: #0b1020;
+}

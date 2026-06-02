@@ -1,0 +1,444 @@
+<style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    .fb-auth-page {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .fb-card {
+      width: 100%;
+      max-width: 520px;
+      border-radius: 16px;
+      border-top: 4px solid transparent;
+      border-image: linear-gradient(to right, #7928ca, #ff0080, #04e09a, #e0d504) 1;
+      border-image-slice: 1;
+      overflow: hidden;
+    }
+    .fb-card-inner {
+      background-image: linear-gradient(127.09deg, rgba(6, 11, 40, 0.94) 19.41%, rgba(10, 14, 35, 0.49) 76.65%);
+      background-color: var(--bs-card-bg, #070c29);
+      backdrop-filter: blur(12px);
+      padding: 36px 32px 32px;
+      border-radius: 0 0 16px 16px;
+    }
+
+    .fb-logo { text-align: center; margin-bottom: 20px; }
+    .fb-logo img { width: 56px; height: 56px; object-fit: contain; border-radius: 50%; background: #fff; padding: 3px; box-shadow: 0 6px 20px rgba(55,124,244,0.18); }
+    .fb-title { text-align: center; font-size: 18px; font-weight: 600; color: var(--bs-heading-color, #e6ecf0); margin-bottom: 24px; }
+
+    /* ── Stepper ── */
+    .fb-stepper { display: flex; align-items: center; justify-content: center; margin-bottom: 28px; }
+    .fb-step { display: flex; align-items: center; gap: 8px; }
+    .fb-step-circle { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; }
+    .fb-step.active .fb-step-circle { background: linear-gradient(135deg, #377CF4, #2E3F8F); color: #fff; box-shadow: 0 2px 8px rgba(55,124,244,0.3); }
+    .fb-step.completed .fb-step-circle { background: #16a34a; color: #fff; }
+    .fb-step-label { font-size: 13px; font-weight: 600; }
+    .fb-step.active .fb-step-label { color: #e6ecf0; }
+    .fb-step.completed .fb-step-label { color: #22c55e; }
+    .fb-step-line { width: 50px; height: 2px; margin: 0 12px; flex-shrink: 0; }
+    .fb-step-line.done { background: #16a34a; }
+
+    .fb-section-title { font-size: 15px; font-weight: 700; color: var(--bs-heading-color, #e6ecf0); margin-bottom: 4px; }
+    .fb-section-desc { font-size: 12.5px; color: rgba(255,255,255,0.45); margin-bottom: 20px; }
+
+    /* ── Member list ── */
+    .fb-member-item {
+      display: flex; align-items: center; gap: 12px;
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px; padding: 12px 14px; margin-bottom: 8px;
+    }
+    .fb-member-avatar {
+      width: 38px; height: 38px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; color: #fff; flex-shrink: 0;
+    }
+    .fb-member-avatar.gestionnaire { background: linear-gradient(135deg, #377CF4, #2E3F8F); }
+    .fb-member-avatar.consultant { background: linear-gradient(135deg, #059669, #10b981); }
+    .fb-member-info { flex: 1; min-width: 0; }
+    .fb-member-info .name { font-size: 13.5px; font-weight: 600; color: #e6ecf0; }
+    .fb-member-info .username { font-size: 12px; color: rgba(255,255,255,0.4); }
+    .fb-role-tag { font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 20px; flex-shrink: 0; }
+    .fb-role-tag.gestionnaire { background: rgba(55,124,244,0.2); color: #60a5fa; }
+    .fb-role-tag.consultant { background: rgba(5,150,105,0.2); color: #34d399; }
+    .fb-member-remove {
+      background: none; border: none; color: rgba(255,255,255,0.3); cursor: pointer;
+      padding: 4px; border-radius: 6px; display: flex; align-items: center; transition: all 0.2s;
+    }
+    .fb-member-remove:hover { color: #ef4444; background: rgba(239,68,68,0.15); }
+
+    /* ── Empty state ── */
+    .fb-empty {
+      text-align: center; padding: 28px 20px;
+      border: 1.5px dashed rgba(255,255,255,0.15); border-radius: 12px; margin-bottom: 16px;
+    }
+    .fb-empty .material-icons-outlined { font-size: 36px; color: rgba(255,255,255,0.2); margin-bottom: 6px; }
+    .fb-empty p { font-size: 13px; color: rgba(255,255,255,0.35); margin: 0; }
+
+    /* ── Add btn ── */
+    .fb-btn-add {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      width: 100%; padding: 12px; margin-bottom: 20px;
+      border: 1.5px dashed #2E3F8F; border-radius: 10px; background: rgba(55,124,244,0.08);
+      color: #60a5fa; font-size: 13.5px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+    }
+    .fb-btn-add:hover { background: rgba(55,124,244,0.15); border-color: #60a5fa; }
+    .fb-btn-add .material-icons-outlined { font-size: 20px; }
+
+    /* ── Add form panel ── */
+    .fb-add-form {
+      display: none;
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px; padding: 22px 20px; margin-bottom: 20px;
+    }
+    .fb-add-form.show { display: block; }
+    .fb-add-form-title { font-size: 14px; font-weight: 700; color: #e6ecf0; margin-bottom: 16px; }
+
+    /* Role toggle */
+    .fb-role-toggle { display: flex; background: rgba(255,255,255,0.08); border-radius: 8px; padding: 3px; margin-bottom: 18px; }
+    .fb-role-toggle .role-btn {
+      flex: 1; text-align: center; padding: 8px 12px; border-radius: 6px; border: none;
+      background: transparent; font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.5);
+      cursor: pointer; transition: all 0.2s;
+    }
+    .fb-role-toggle .role-btn.active { background: rgba(255,255,255,0.12); color: #e6ecf0; }
+
+    /* Shared input styles */
+    .fb-field { margin-bottom: 14px; }
+    .fb-field label { display: block; font-size: 12.5px; font-weight: 600; color: var(--bs-body-color, #d3d7dc); margin-bottom: 5px; }
+    .fb-input {
+      display: flex; align-items: center; width: 100%;
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 10px; padding: 0 14px; height: 42px; overflow: hidden;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .fb-input:focus-within { border-color: #2E3F8F; box-shadow: 0 0 0 3px rgba(55,124,244,0.15); background: rgba(255,255,255,0.08); }
+    .fb-input .icon { color: rgba(255,255,255,0.4); font-size: 18px; flex-shrink: 0; margin-right: 8px; }
+    .fb-input input,
+    .fb-input input[type="text"],
+    .fb-input input[type="password"],
+    .fb-input input[type="tel"] {
+      flex: 1 1 0 !important; min-width: 0 !important; width: 0 !important;
+      border: none !important; background: none !important; outline: none !important;
+      box-shadow: none !important; padding: 0 !important;
+      font-size: 13px; font-family: 'Noto Sans', sans-serif; color: #e6ecf0; height: 100%;
+      overflow: hidden; text-overflow: ellipsis;
+    }
+    .fb-input input::placeholder { color: rgba(255,255,255,0.3) !important; }
+    [data-bs-theme="light"] .fb-input input,
+    [data-bs-theme="bodered-theme"] .fb-input input { color: #000 !important; }
+    [data-bs-theme="light"] .fb-input input::placeholder,
+    [data-bs-theme="bodered-theme"] .fb-input input::placeholder { color: rgba(0,0,0,0.4) !important; opacity: 1 !important; }
+    .fb-input input[readonly] { opacity: 0.6; }
+    .fb-input .btn-eye {
+      background: none; border: none; color: rgba(255,255,255,0.4); cursor: pointer;
+      padding: 0; flex-shrink: 0; margin-left: 8px; display: flex; align-items: center; font-size: 18px;
+    }
+    .fb-input .btn-eye:hover { color: #2E3F8F; }
+
+    .fb-row { display: flex; gap: 10px; }
+    .fb-row .fb-field { flex: 1; }
+
+    .fb-phone-row { display: flex; gap: 8px; align-items: flex-end; }
+    .fb-phone-prefix {
+      background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 10px; padding: 0 12px; height: 42px; display: flex; align-items: center;
+      font-size: 13px; font-weight: 600; color: #d3d7dc; flex-shrink: 0;
+    }
+    .fb-phone-row .fb-field { flex: 1; margin-bottom: 0; }
+    .fb-btn-verify {
+      height: 42px; padding: 0 14px; border: none; border-radius: 10px;
+      background: rgba(55,124,244,0.2); color: #60a5fa; font-size: 12px; font-weight: 600;
+      cursor: pointer; flex-shrink: 0;
+    }
+    .fb-btn-verify:hover { background: rgba(55,124,244,0.35); }
+
+    .fb-strength-bar { height: 3px; background: rgba(255,255,255,0.1); border-radius: 3px; margin-top: 6px; overflow: hidden; }
+    .fb-strength-bar .bar-fill { height: 100%; width: 0%; border-radius: 3px; transition: width 0.3s, background 0.3s; }
+    .fb-strength-text { font-size: 11px; margin-top: 3px; font-weight: 500; }
+
+    /* Form actions */
+    .fb-form-actions { display: flex; gap: 10px; margin-top: 18px; }
+    .fb-btn-sm-primary {
+      flex: 1; height: 40px; border: none; border-radius: 10px;
+      background: linear-gradient(135deg, #377CF4, #2E3F8F); color: #fff;
+      font-size: 13.5px; font-weight: 600; cursor: pointer; box-shadow: 0 2px 8px rgba(55,124,244,0.2);
+    }
+    .fb-btn-sm-primary:hover { box-shadow: 0 4px 14px rgba(55,124,244,0.3); }
+    .fb-btn-sm-secondary {
+      flex: 1; height: 40px; border: 1px solid rgba(255,255,255,0.15); border-radius: 10px;
+      background: transparent; color: rgba(255,255,255,0.6); font-size: 13.5px; font-weight: 600; cursor: pointer;
+    }
+    .fb-btn-sm-secondary:hover { background: rgba(255,255,255,0.05); color: #e6ecf0; }
+
+    /* ═══════════════════════════════════════════════════════════
+       Overrides MODE CLAIR (light + bordered) — toutes les classes
+       qui utilisent rgba(255,255,255,X) sont invisibles sur fond
+       blanc. On les repasse en gris/noir lisibles + bordures plus
+       franches pour bien encadrer les zones.
+       ═══════════════════════════════════════════════════════════ */
+    [data-bs-theme="light"] .fb-card-inner,
+    [data-bs-theme="bodered-theme"] .fb-card-inner {
+      border: 1.5px solid #64748b;
+    }
+    [data-bs-theme="light"] .fb-title,
+    [data-bs-theme="bodered-theme"] .fb-title,
+    [data-bs-theme="light"] .fb-section-title,
+    [data-bs-theme="bodered-theme"] .fb-section-title,
+    [data-bs-theme="light"] .fb-add-form-title,
+    [data-bs-theme="bodered-theme"] .fb-add-form-title {
+      color: #0f172a !important;
+    }
+    [data-bs-theme="light"] .fb-section-desc,
+    [data-bs-theme="bodered-theme"] .fb-section-desc { color: #475569 !important; }
+    [data-bs-theme="light"] .fb-step.active .fb-step-label,
+    [data-bs-theme="bodered-theme"] .fb-step.active .fb-step-label { color: #0f172a !important; }
+    [data-bs-theme="light"] .fb-field label,
+    [data-bs-theme="bodered-theme"] .fb-field label { color: #1f2937 !important; }
+
+    /* Empty state, member card */
+    [data-bs-theme="light"] .fb-empty,
+    [data-bs-theme="bodered-theme"] .fb-empty { border-color: #94a3b8; }
+    [data-bs-theme="light"] .fb-empty .material-icons-outlined,
+    [data-bs-theme="bodered-theme"] .fb-empty .material-icons-outlined { color: #94a3b8 !important; }
+    [data-bs-theme="light"] .fb-empty p,
+    [data-bs-theme="bodered-theme"] .fb-empty p { color: #475569 !important; }
+    [data-bs-theme="light"] .fb-member-item,
+    [data-bs-theme="bodered-theme"] .fb-member-item {
+      background: #f8fafc; border-color: #cbd5e1;
+    }
+    [data-bs-theme="light"] .fb-member-info .name,
+    [data-bs-theme="bodered-theme"] .fb-member-info .name { color: #0f172a !important; }
+    [data-bs-theme="light"] .fb-member-info .username,
+    [data-bs-theme="bodered-theme"] .fb-member-info .username { color: #64748b !important; }
+
+    /* Add form panel + role toggle */
+    [data-bs-theme="light"] .fb-add-form,
+    [data-bs-theme="bodered-theme"] .fb-add-form {
+      background: #f8fafc; border-color: #cbd5e1;
+    }
+    [data-bs-theme="light"] .fb-role-toggle,
+    [data-bs-theme="bodered-theme"] .fb-role-toggle {
+      background: #e2e8f0;
+    }
+    [data-bs-theme="light"] .fb-role-toggle .role-btn,
+    [data-bs-theme="bodered-theme"] .fb-role-toggle .role-btn { color: #475569; }
+    [data-bs-theme="light"] .fb-role-toggle .role-btn.active,
+    [data-bs-theme="bodered-theme"] .fb-role-toggle .role-btn.active {
+      background: #ffffff; color: #0f172a;
+    }
+
+    /* Inputs, icons, eye button */
+    [data-bs-theme="light"] .fb-input,
+    [data-bs-theme="bodered-theme"] .fb-input {
+      background: #f3f4f6; border-color: #cbd5e1;
+    }
+    [data-bs-theme="light"] .fb-input .icon,
+    [data-bs-theme="bodered-theme"] .fb-input .icon { color: #64748b !important; }
+    [data-bs-theme="light"] .fb-input .btn-eye,
+    [data-bs-theme="bodered-theme"] .fb-input .btn-eye { color: #64748b !important; }
+
+    /* Phone prefix +216 */
+    [data-bs-theme="light"] .fb-phone-prefix,
+    [data-bs-theme="bodered-theme"] .fb-phone-prefix {
+      background: #f3f4f6; border-color: #cbd5e1; color: #0f172a !important;
+    }
+
+    /* Secondary "Annuler" button */
+    [data-bs-theme="light"] .fb-btn-sm-secondary,
+    [data-bs-theme="bodered-theme"] .fb-btn-sm-secondary {
+      border-color: #cbd5e1; color: #475569 !important;
+    }
+    [data-bs-theme="light"] .fb-btn-sm-secondary:hover,
+    [data-bs-theme="bodered-theme"] .fb-btn-sm-secondary:hover {
+      background: #f1f5f9; color: #0f172a !important;
+    }
+
+    /* ── Finish button ── */
+    .fb-btn-finish {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      width: 100%; height: 46px; border: none; border-radius: 10px;
+      background: linear-gradient(135deg, #16a34a, #22c55e); color: #fff;
+      font-size: 15px; font-weight: 600; font-family: 'Noto Sans', sans-serif;
+      cursor: pointer; box-shadow: 0 4px 14px rgba(22,163,74,0.3); transition: box-shadow 0.2s, transform 0.15s;
+    }
+    .fb-btn-finish:hover { box-shadow: 0 6px 20px rgba(22,163,74,0.4); transform: translateY(-1px); }
+    .fb-btn-finish:active { transform: translateY(0); }
+    .fb-btn-finish .material-icons-outlined { font-size: 20px; }
+
+    &#64;media (max-width: 480px) {
+      .fb-card-inner { padding: 28px 20px 24px; }
+      .fb-row { flex-direction: column; gap: 0; }
+      .fb-phone-row { flex-wrap: wrap; }
+      .fb-step-line { width: 30px; margin: 0 6px; }
+    }
+  </style>
+
+
+  <div class="fb-auth-page">
+    <div style="position: fixed; top: 18px; right: 18px; z-index: 1050;">
+      <app-theme-switcher></app-theme-switcher>
+    </div>
+
+    <div class="fb-card">
+      <div class="fb-card-inner">
+
+        <div class="fb-logo">
+          <img src="/assets/images/app-logo.jpeg" alt="FamilyBalance">
+        </div>
+
+        <h4 class="fb-title">Créez votre espace familial</h4>
+
+        <!-- Stepper -->
+        <div class="fb-stepper">
+          <div class="fb-step completed">
+            <div class="fb-step-circle"><span class="material-icons-outlined" style="font-size:16px">check</span></div>
+            <span class="fb-step-label">La famille</span>
+          </div>
+          <div class="fb-step-line done"></div>
+          <div class="fb-step active">
+            <div class="fb-step-circle">2</div>
+            <span class="fb-step-label">Les membres</span>
+          </div>
+        </div>
+
+        <div class="fb-section-title">Membres de la famille</div>
+        <div class="fb-section-desc">Ajoutez vos proches (enfants, consultants...)</div>
+
+        <!-- Member list -->
+        <div id="memberList">
+          <div *ngIf="members.length === 0" class="fb-empty">
+            <span class="material-icons-outlined">group_add</span>
+            <p>Aucun membre ajouté pour l'instant</p>
+          </div>
+
+          <div *ngFor="let m of members" class="fb-member-item">
+            <div class="fb-member-avatar" [ngClass]="m.role">
+              <span class="material-icons-outlined">person</span>
+            </div>
+            <div class="fb-member-info">
+              <div class="name">{{ m.firstName }} {{ m.lastName }}</div>
+              <div class="username">&#64;{{ m.username }}</div>
+            </div>
+            <span class="fb-role-tag" [ngClass]="m.role">
+              {{ m.role === 'gestionnaire' ? 'Gestionnaire' : 'Consultant' }}
+            </span>
+            <button type="button" class="fb-member-remove" (click)="removeMember(m.id)">
+              <span class="material-icons-outlined" style="font-size:18px">close</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Add member btn -->
+        <button *ngIf="!addFormOpen" type="button" class="fb-btn-add" (click)="toggleAddForm(true)">
+          <span class="material-icons-outlined">person_add</span>
+          Ajouter un membre
+        </button>
+
+        <!-- Add member form -->
+        <div class="fb-add-form" [class.show]="addFormOpen">
+          <div class="fb-add-form-title">Nouveau membre</div>
+
+          <div class="fb-role-toggle">
+            <button type="button" class="role-btn" [class.active]="selectedRole === 'gestionnaire'"
+                    (click)="selectMemberRole('gestionnaire')">Gestionnaire</button>
+            <button type="button" class="role-btn" [class.active]="selectedRole === 'consultant'"
+                    (click)="selectMemberRole('consultant')">Consultant</button>
+          </div>
+
+          <div class="fb-row">
+            <div class="fb-field">
+              <label>Prénom</label>
+              <div class="fb-input">
+                <span class="material-icons-outlined icon">person</span>
+                <input type="text" id="memberFirstName" name="mFirstName"
+                       [(ngModel)]="firstName" (ngModelChange)="syncUsername()" placeholder="Entrez le prénom">
+              </div>
+            </div>
+            <div class="fb-field">
+              <label>Nom</label>
+              <div class="fb-input">
+                <span class="material-icons-outlined icon">badge</span>
+                <input type="text" id="memberLastName" name="mLastName"
+                       [(ngModel)]="lastName" (ngModelChange)="syncUsername()" placeholder="Entrez le nom">
+              </div>
+            </div>
+          </div>
+
+          <div class="fb-field">
+            <label>Mot de passe</label>
+            <div class="fb-input" id="memberPwdWrap">
+              <span class="material-icons-outlined icon">lock</span>
+              <input type="password" id="memberPassword" name="mPassword"
+                     [(ngModel)]="password" placeholder="Minimum 6 caractères">
+              <button type="button" class="btn-eye" id="toggleMemberPwd">
+                <span class="material-icons-outlined">visibility_off</span>
+              </button>
+            </div>
+            <div class="fb-strength-bar"><div class="bar-fill" id="memberStrengthFill"></div></div>
+            <div class="fb-strength-text" id="memberStrengthText"></div>
+          </div>
+
+          <div class="fb-field" style="margin-bottom:0">
+            <label>Numéro de téléphone</label>
+            <div class="fb-phone-row">
+              <div class="fb-phone-prefix">+216</div>
+              <div class="fb-field" style="margin-bottom:0">
+                <div class="fb-input">
+                  <span class="material-icons-outlined icon">phone</span>
+                  <input type="tel" id="memberPhone" name="mPhone"
+                         [(ngModel)]="phone" placeholder="XX XXX XXX"
+                         inputmode="numeric" maxlength="8" pattern="\d*"
+                         (input)="onPhoneInput($event)"
+                         [disabled]="memberPhoneVerified">
+                </div>
+              </div>
+              <button type="button" class="fb-btn-verify" (click)="sendMemberOtp()"
+                      [disabled]="memberOtpStatus === 'sending' || memberPhoneVerified">
+                {{ memberPhoneVerified ? 'Vérifié ✓' : (memberOtpStatus === 'sending' ? 'Envoi…' : (memberOtpRequested ? 'Renvoyer' : 'Vérifier')) }}
+              </button>
+            </div>
+
+            <!-- Champ code OTP : apparaît après l'envoi du SMS, masqué une fois vérifié -->
+            <div *ngIf="memberOtpRequested && !memberPhoneVerified" class="fb-phone-row" style="margin-top:10px;">
+              <div class="fb-field" style="margin-bottom:0">
+                <div class="fb-input">
+                  <span class="material-icons-outlined icon">pin</span>
+                  <input type="text" name="memberOtpCode" [(ngModel)]="memberOtpCode"
+                         placeholder="Code reçu par SMS" inputmode="numeric" maxlength="6">
+                </div>
+              </div>
+              <button type="button" class="fb-btn-verify" (click)="verifyMemberOtp()"
+                      [disabled]="memberOtpStatus === 'verifying'">
+                {{ memberOtpStatus === 'verifying' ? '…' : 'Valider' }}
+              </button>
+            </div>
+
+            <div *ngIf="memberOtpError" class="fb-strength-text" style="color:#ef4444;margin-top:6px;">{{ memberOtpError }}</div>
+            <div *ngIf="memberPhoneVerified" class="fb-strength-text" style="color:#22c55e;margin-top:6px;">Numéro vérifié avec succès.</div>
+          </div>
+
+          <div *ngIf="errorMsg" class="fb-strength-text" style="color:#ef4444;margin-top:10px;">
+            {{ errorMsg }}
+          </div>
+
+          <div class="fb-form-actions">
+            <button type="button" class="fb-btn-sm-secondary" (click)="toggleAddForm(false)">Annuler</button>
+            <button type="button" class="fb-btn-sm-primary" (click)="addMember()" [disabled]="adding">
+              {{ adding ? 'Ajout…' : 'Ajouter' }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Finish -->
+        <button type="button" class="fb-btn-finish" (click)="finishSetup()">
+          <span class="material-icons-outlined">check_circle</span>
+          Terminer la configuration
+        </button>
+
+      </div>
+    </div>
+  </div>

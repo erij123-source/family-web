@@ -1,0 +1,640 @@
+<style>
+    /* ── Shared button/badge system ── */
+    .btn-grd-primary,.btn-grd.btn-grd-primary{background:linear-gradient(135deg,#377CF4,#2E3F8F)!important;border:none!important;color:#fff!important;}
+    .btn-grd-primary:hover{background:linear-gradient(135deg, #2E6BE0, #26336F)!important;}
+    .btn-grd-success,.btn-grd.btn-grd-success{background:linear-gradient(135deg,#16a34a,#22c55e)!important;border:none!important;color:#fff!important;}
+    .btn-grd-danger,.btn-grd.btn-grd-danger{background:linear-gradient(135deg,#dc2626,#ef4444)!important;border:none!important;color:#fff!important;}
+    .btn-grd-warning,.btn-grd.btn-grd-warning{background:linear-gradient(135deg,#d97706,#f59e0b)!important;border:none!important;color:#fff!important;}
+
+    /* ══════════════════════════════════════════════
+       FAMILLE PAGE - SPECIFIC STYLES
+    ══════════════════════════════════════════════ */
+    .famille-page-header { display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:24px; }
+    .famille-page-header .header-left h4 { font-size:22px; font-weight:700; margin-bottom:4px; display:flex; align-items:center; gap:8px; }
+    .famille-page-header .header-left h4 .header-icon { font-size:26px; color:#2E3F8F; }
+    .famille-page-header .header-left p { font-size:13.5px; color:#000000; margin:0; }
+    .famille-page-header .header-actions { display:flex; gap:10px; flex-shrink:0; }
+
+    .famille-toolbar { display:flex; align-items:center; gap:10px; margin-bottom:24px; flex-wrap:wrap; padding:14px 18px; background:var(--bs-body-bg); border:1px solid var(--bs-border-color); border-radius:16px; box-shadow:0 2px 10px rgba(0,0,0,0.08); }
+    .famille-toolbar .search-wrap { position:relative; flex:1; min-width:200px; }
+    .famille-toolbar .search-wrap .material-icons-outlined { position:absolute; left:12px; top:50%; transform:translateY(-50%); font-size:19px; opacity:0.4; pointer-events:none; }
+    .famille-toolbar .search-input { width:100%; padding:9px 14px 9px 40px; border-radius:10px; border:1px solid var(--bs-border-color); background:var(--bs-body-bg); font-size:13.5px; outline:none; transition:border-color 0.2s, box-shadow 0.2s; color:var(--bs-body-color); }
+    .famille-toolbar .search-input:focus { border-color:#2E3F8F; box-shadow:0 0 0 3px rgba(55,124,244,0.15); }
+    .toolbar-divider { width:1px; height:28px; background:var(--bs-border-color); flex-shrink:0; }
+    .filter-btn { padding:8px 16px; border-radius:10px; border:1px solid var(--bs-border-color); background:transparent; font-size:13px; font-weight:500; cursor:pointer; display:flex; align-items:center; gap:6px; transition:all 0.2s; color:var(--bs-body-color); white-space:nowrap; }
+    .filter-btn:hover { border-color:#2E3F8F; color:#2E3F8F; background:rgba(55,124,244,0.05); }
+    .filter-btn.active { background:rgba(55,124,244,0.1); border-color:#2E3F8F; color:#2E3F8F; font-weight:600; }
+    .filter-btn .material-icons-outlined { font-size:15px; }
+
+    .members-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:20px; }
+
+    .member-card { background:var(--bs-body-bg); border-radius:20px; padding:24px; border:1px solid var(--bs-border-color); box-shadow:0 2px 14px rgba(0,0,0,0.1); transition:all 0.25s cubic-bezier(.4,0,.2,1); position:relative; overflow:hidden; }
+    .member-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg,#377CF4,#2E3F8F); opacity:0; transition:opacity 0.25s; }
+    .member-card:hover { transform:translateY(-4px); box-shadow:0 12px 32px rgba(0,0,0,0.15); border-color:rgba(55,124,244,0.3); }
+    .member-card:hover::before { opacity:1; }
+
+    .member-card-header { display:flex; align-items:center; gap:14px; margin-bottom:16px; }
+    .member-avatar { width:56px; height:56px; border-radius:16px; display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:700; color:white; flex-shrink:0; position:relative; }
+    .member-avatar .status-dot { width:12px; height:12px; border-radius:50%; background:#22c55e; border:2px solid var(--bs-body-bg,#fff); position:absolute; bottom:-1px; right:-1px; }
+    .member-avatar .status-dot.offline { background:#94a3b8; }
+    .member-info { flex:1; min-width:0; }
+    .member-name { font-size:15px; font-weight:700; margin:0 0 3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .member-phone { font-size:12px; opacity:0.60; margin:0; display:flex; align-items:center; gap:4px; }
+
+    .role-badge { display:inline-flex; align-items:center; gap:5px; padding:4px 10px; border-radius:20px; font-size:11.5px; font-weight:600; text-transform:capitalize; }
+    .role-badge .role-dot { width:6px; height:6px; border-radius:50%; }
+    .role-badge.admin { background:rgba(239,68,68,0.1); color:#dc2626; }
+    .role-badge.admin .role-dot { background:#dc2626; }
+    .role-badge.gestionnaire { background:rgba(55,124,244,0.1); color:#377CF4; }
+    .role-badge.gestionnaire .role-dot { background:#377CF4; }
+    .role-badge.consultant { background:rgba(16,185,129,0.1); color:#059669; }
+    .role-badge.consultant .role-dot { background:#059669; }
+
+    .member-role-row { display:flex; align-items:center; gap:8px; margin-bottom:16px; }
+
+    .member-stats-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px; }
+    .member-stats-row.three-cols { grid-template-columns:repeat(3, 1fr); gap:8px; }
+    .member-stat-box { background:rgba(55,124,244,0.06); border:1px solid rgba(55,124,244,0.12); border-radius:12px; padding:12px 14px; }
+    .member-stat-box .ms-label { font-size:10.5px; opacity:0.70; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px; }
+    .member-stat-box .ms-value { font-size:15px; font-weight:700; }
+    .member-stat-box .ms-value.income { color:#22c55e; }
+    .member-stat-box .ms-value.spend { color:#f87171; }
+    .member-stat-box .ms-value.budget { color:#2E3F8F; }
+    @media (max-width:420px) { .member-stats-row.three-cols { grid-template-columns:1fr 1fr; } }
+
+    .member-budget-bar { margin-bottom:16px; }
+    .member-budget-bar .bar-labels { display:flex; justify-content:space-between; font-size:11.5px; font-weight:600; margin-bottom:6px; }
+    .member-budget-bar .bar-labels .pct { opacity:0.65; }
+    .budget-progress { height:6px; border-radius:99px; background:var(--bs-border-color); overflow:hidden; }
+    .budget-progress .fill { height:100%; border-radius:99px; transition:width 0.6s ease; }
+
+    .member-card-actions { display:flex; gap:8px; padding-top:16px; border-top:1px solid var(--bs-border-color); }
+    .member-action-btn { flex:1; padding:8px 12px; border-radius:10px; border:1px solid var(--bs-border-color); background:transparent; font-size:12.5px; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:5px; transition:all 0.2s; color:var(--bs-body-color); }
+    .member-action-btn:hover { transform:translateY(-1px); }
+    .member-action-btn.edit-btn:hover { background:rgba(55,124,244,0.1); border-color:#2E3F8F; color:#2E3F8F; }
+    .member-action-btn.delete-btn:hover { background:rgba(239,68,68,0.1); border-color:#ef4444; color:#ef4444; }
+
+    .member-card.is-owner { border-color:rgba(55,124,244,0.35); }
+    .member-card.is-owner::before { opacity:1; }
+    .owner-crown { position:absolute; top:16px; right:16px; font-size:16px; opacity:0.45; color:#f59e0b; }
+
+    .fb-empty { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:80px 20px; text-align:center; }
+    .empty-illustration { width:100px; height:100px; border-radius:28px; background:linear-gradient(135deg,rgba(55,124,244,0.1),rgba(55,124,244,0.05)); display:flex; align-items:center; justify-content:center; font-size:46px; margin:0 auto 22px; color:#2E3F8F; }
+
+    /* ── Photo de profil block (top of modal) ── */
+    .fb-fm-photo-block { display:flex; align-items:center; gap:16px; padding:14px 16px; margin-bottom:18px; background:rgba(15,23,42,0.04); border:1px solid var(--bs-border-color); border-radius:14px; }
+    .fb-fm-photo-avatar { width:72px; height:72px; border-radius:50%; overflow:hidden; flex-shrink:0; border:2px solid var(--bs-border-color); background:linear-gradient(135deg,#1e293b,#334155); display:flex; align-items:center; justify-content:center; }
+    .fb-fm-photo-avatar img { width:100%; height:100%; object-fit:cover; display:block; }
+    .fb-fm-photo-fallback { color:#94a3b8; }
+    .fb-fm-photo-fallback i { font-size:34px; }
+    .fb-fm-photo-info { flex:1; min-width:0; }
+    .fb-fm-photo-title { font-size:14.5px; font-weight:700; margin-bottom:2px; }
+    .fb-fm-photo-subtitle { font-size:12px; opacity:0.6; margin-bottom:10px; }
+    .fb-fm-photo-actions { display:flex; gap:8px; flex-wrap:wrap; }
+    .fb-fm-photo-btn { padding:7px 14px; border-radius:9px; border:none; cursor:pointer; font-size:12.5px; font-weight:600; display:inline-flex; align-items:center; gap:5px; transition:transform .15s, box-shadow .15s, opacity .15s; }
+    .fb-fm-photo-btn:disabled { opacity:0.45; cursor:not-allowed; }
+    .fb-fm-photo-btn:not(:disabled):hover { transform:translateY(-1px); box-shadow:0 4px 12px rgba(0,0,0,0.18); }
+    .fb-fm-photo-btn.change { background:linear-gradient(135deg,#377CF4,#2E3F8F); color:#fff; }
+    .fb-fm-photo-btn.remove { background:linear-gradient(135deg,#dc2626,#ef4444); color:#fff; }
+    .fb-fm-photo-btn i { font-size:15px; }
+
+    /* ── Modal (Angular-only, Bootstrap-free) ── */
+    .fb-fm-overlay { position:fixed; inset:0; z-index:1080; background:rgba(2,6,23,0.6); backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; padding:20px; }
+    .fb-fm-card { position:relative; width:100%; max-width:520px; max-height:92vh; overflow:auto; background:var(--bs-body-bg); color:var(--bs-body-color); border:1px solid var(--bs-border-color); border-radius:18px; box-shadow:0 22px 60px rgba(0,0,0,0.35); padding:26px 28px 22px; }
+    .fb-fm-card .accent { position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg,#377CF4,#2E3F8F); border-radius:18px 18px 0 0; }
+    .fb-fm-head { display:flex; align-items:flex-start; gap:12px; padding-bottom:14px; margin-bottom:16px; border-bottom:1px solid var(--bs-border-color); }
+    .fb-fm-head-icon { width:36px; height:36px; border-radius:10px; background:linear-gradient(135deg,#377CF4,#2E3F8F); display:flex; align-items:center; justify-content:center; color:#fff; flex-shrink:0; }
+    .fb-fm-head-icon i { font-size:22px; }
+    .fb-fm-title { margin:0; font-size:17px; font-weight:700; }
+    .fb-fm-sub { margin:2px 0 0; font-size:12.5px; opacity:0.55; }
+    .fb-fm-close { background:transparent; border:0; cursor:pointer; color:#2E3F8F; padding:2px; border-radius:8px; display:flex; align-items:center; }
+    .fb-fm-close:hover { background:rgba(55,124,244,0.1); }
+    .fb-fm-form { display:flex; flex-direction:column; gap:14px; }
+    .fb-fm-row { display:grid; gap:12px; grid-template-columns:1fr 1fr; }
+    @media (max-width:520px) { .fb-fm-row { grid-template-columns:1fr; } }
+    .fb-fm-field { display:flex; flex-direction:column; gap:6px; }
+    .fb-fm-field label { display:flex; align-items:center; gap:5px; font-size:13px; font-weight:600; color:#2E3F8F; }
+    .fb-fm-field label i { font-size:16px; }
+    .fb-fm-field label .req { color:#ef4444; margin-left:2px; }
+    .fb-fm-field input, .fb-fm-field select { width:100%; padding:10px 14px; border:1px solid var(--bs-border-color); border-radius:999px; background:var(--bs-body-bg); color:var(--bs-body-color); font-size:13.5px; outline:none; transition:border-color .2s, box-shadow .2s; font-family:inherit; }
+    .fb-fm-field input:focus, .fb-fm-field select:focus { border-color:#2E3F8F; box-shadow:0 0 0 3px rgba(55,124,244,0.14); }
+    .fb-fm-field input[readonly] { opacity:0.7; }
+    .fb-fm-phone-wrap { display:flex; gap:8px; align-items:center; }
+    .fb-fm-phone-wrap .prefix { padding:10px 14px; border:1px solid var(--bs-border-color); border-radius:999px; font-weight:600; opacity:0.7; font-size:13px; flex-shrink:0; }
+    .fb-fm-alert { padding:9px 12px; border-radius:10px; font-size:13px; background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.3); color:#dc2626; }
+    .fb-fm-actions { display:flex; gap:10px; justify-content:flex-end; margin-top:6px; padding-top:14px; border-top:1px solid var(--bs-border-color); }
+    .fb-fm-btn-cancel { padding:9px 18px; border-radius:999px; background:transparent; color:var(--bs-body-color); opacity:0.75; border:1px solid var(--bs-border-color); font-size:13.5px; font-weight:600; cursor:pointer; }
+    .fb-fm-btn-cancel:hover { opacity:1; background:rgba(0,0,0,0.04); }
+    .fb-fm-btn-save { padding:0 22px; height:40px; border-radius:999px; background:linear-gradient(135deg,#377CF4,#2E3F8F); color:#fff; border:0; cursor:pointer; font-size:13.5px; font-weight:600; box-shadow:0 3px 12px rgba(55,124,244,0.3); display:inline-flex; align-items:center; gap:6px; }
+    .fb-fm-btn-save:hover { filter:brightness(1.08); }
+    .fb-fm-btn-save:disabled { opacity:0.7; cursor:not-allowed; }
+
+    /* Delete confirm */
+    .fb-fm-del-body { text-align:center; padding:10px 0 20px; }
+    .fb-fm-del-icon { width:68px; height:68px; border-radius:20px; background:rgba(239,68,68,0.1); display:flex; align-items:center; justify-content:center; margin:0 auto 18px; font-size:30px; color:#ef4444; }
+    .fb-fm-btn-delete { padding:0 22px; height:40px; border-radius:999px; background:linear-gradient(135deg,#dc2626,#ef4444); color:#fff; border:0; cursor:pointer; font-size:13.5px; font-weight:600; }
+    .fb-fm-btn-delete:hover { filter:brightness(1.08); }
+
+    /* Toast */
+    .fb-fm-toast { position:fixed; bottom:24px; right:24px; z-index:1090; padding:12px 16px; border-radius:12px; color:#fff; font-size:13.5px; font-weight:600; display:flex; align-items:center; gap:8px; box-shadow:0 10px 30px rgba(0,0,0,0.3); animation:fadeInUp .25s ease; }
+    .fb-fm-toast.success { background:linear-gradient(135deg,#16a34a,#22c55e); }
+    .fb-fm-toast.danger  { background:linear-gradient(135deg,#dc2626,#ef4444); }
+    .fb-fm-toast.warning { background:linear-gradient(135deg,#d97706,#f59e0b); }
+    .fb-fm-toast.info    { background:linear-gradient(135deg,#0891b2,#06b6d4); }
+    .fb-fm-toast .material-icons-outlined { font-size:18px; }
+
+    @keyframes fadeInUp { from{opacity:0; transform:translateY(14px);} to{opacity:1; transform:translateY(0);} }
+    .member-card { animation:fadeInUp 0.35s ease both; }
+
+    @media (max-width:768px) {
+      .famille-toolbar { flex-direction:column; align-items:stretch; gap:10px; }
+      .famille-toolbar .search-wrap { min-width:0; }
+      .toolbar-divider { display:none; }
+      .famille-page-header { flex-direction:column; align-items:flex-start; gap:12px; }
+      .famille-page-header .header-actions { width:100%; }
+    }
+    @media (max-width:600px) { .members-grid { grid-template-columns:1fr; } }
+
+    /* ══════════════════════════════════════════════
+       FAMILY BUDGET OVERVIEW — hero card (style aligné
+       sur .rav-card de Home et .rev-kpi-banner de Revenus :
+       même gradient bleu, même typographie Noto Sans,
+       mêmes accents ambre/cyan/vert).
+    ══════════════════════════════════════════════ */
+    .fam-overview-card {
+      background: linear-gradient(135deg, #377CF4 0%, #2E3F8F 100%);
+      border-radius: 22px;
+      padding: 1.5rem 1.75rem;
+      color: #fff;
+      margin-bottom: 24px;
+      box-shadow: 0 8px 28px rgba(55,124,244, 0.35);
+      position: relative;
+      overflow: hidden;
+      font-family: "Noto Sans", sans-serif;
+    }
+    .fam-overview-card::after {
+      content: ''; position: absolute; right: -60px; top: -60px;
+      width: 260px; height: 260px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,255,255,0.10), transparent 70%);
+      pointer-events: none;
+    }
+    .fam-overview-header {
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 18px;
+      font-size: 13px; font-weight: 700; letter-spacing: 0.3px;
+      position: relative; z-index: 1;
+    }
+    .fam-overview-header .material-icons-outlined { font-size: 20px; color: #fde68a; }
+
+    .fam-overview-stats {
+      display: flex; align-items: stretch; gap: 24px;
+      flex-wrap: wrap; margin-bottom: 18px;
+      position: relative; z-index: 1;
+    }
+    .fam-stat { flex: 1; min-width: 160px; display: flex; flex-direction: column; gap: 4px; }
+    .fam-stat-label {
+      font-size: 11px; font-weight: 600; letter-spacing: 0.6px;
+      text-transform: uppercase; color: #bae6fd;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .fam-stat-label .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+    .fam-stat-label .dot-distrib { background: #fde68a; }
+    .fam-stat-label .dot-rest    { background: #bbf7d0; }
+
+    .fam-stat-amount {
+      font-size: 28px; font-weight: 800; letter-spacing: -0.6px;
+      line-height: 1.1; color: #fff;
+    }
+    .fam-stat-amount.fam-stat-distrib {
+      background: linear-gradient(90deg, #fef3c7 0%, #fde68a 60%, #fbbf24 100%);
+      -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .fam-stat-amount.fam-stat-rest {
+      background: linear-gradient(90deg, #ffffff 0%, #d1fae5 60%, #bbf7d0 100%);
+      -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .fam-stat-unit {
+      font-size: 14px; font-weight: 600;
+      color: rgba(255,255,255,0.7);
+      -webkit-text-fill-color: rgba(255,255,255,0.7);
+      margin-left: 4px;
+    }
+    .fam-stat-pct {
+      font-size: 11px; font-weight: 600;
+      color: #bae6fd; margin-top: 2px;
+    }
+    .fam-stat-divider {
+      width: 1px; background: rgba(255,255,255,0.18);
+      flex-shrink: 0; align-self: stretch;
+    }
+    @media (max-width: 720px) {
+      .fam-stat-divider { display: none; }
+      .fam-overview-stats { gap: 16px; }
+    }
+
+    .fam-overview-progress { position: relative; z-index: 1; }
+    .fam-overview-track {
+      height: 10px; background: rgba(255,255,255,0.18);
+      border-radius: 20px; overflow: hidden; margin-bottom: 6px;
+    }
+    .fam-overview-fill {
+      height: 100%; border-radius: 20px;
+      background: linear-gradient(90deg, #fde68a, #fbbf24);
+      box-shadow: 0 0 12px rgba(251,191,36,0.55);
+      transition: width 0.8s cubic-bezier(.4,0,.2,1);
+    }
+    .fam-overview-legend {
+      display: flex; justify-content: space-between;
+      font-size: 11px; font-weight: 600;
+      color: rgba(255,255,255,0.7);
+    }
+  </style>
+
+  <!-- ── PAGE HEADER (titre + bouton "Ajouter un membre") ──
+       Placé AVANT la vue d'ensemble pour s'aligner sur les pages Revenus /
+       Charges / Factures où le titre + l'action principale sont toujours en
+       haut, suivis du bloc KPI. -->
+  <div class="famille-page-header">
+    <div class="header-left">
+      <h4>
+        <span class="material-icons-outlined header-icon">group</span>
+        Famille {{ familleName }}
+      </h4>
+      <p>Gérez vos membres, rôles et contributions financières</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-grd btn-grd-primary d-flex align-items-center gap-2"
+              (click)="openAddModal()"
+              style="border-radius:10px;font-size:13.5px;padding:9px 18px;">
+        <span class="material-icons-outlined" style="font-size:18px">person_add</span>
+        Ajouter un membre
+      </button>
+    </div>
+  </div>
+
+  <!-- ── BUDGET OVERVIEW CARD ── -->
+  <div class="fam-overview-card">
+    <div class="fam-overview-header">
+      <span class="material-icons-outlined">account_balance</span>
+      Vue d'ensemble du budget familial
+    </div>
+
+    <div class="fam-overview-stats">
+      <!-- Revenus du mois -->
+      <div class="fam-stat">
+        <span class="fam-stat-label">Revenus du mois</span>
+        <span class="fam-stat-amount">
+          {{ totalRevenusFamille | number:'1.0-0' }}<span class="fam-stat-unit">DT</span>
+        </span>
+        <span class="fam-stat-pct">
+          revenus encaissés ce mois<ng-container *ngIf="revenuCarryover > 0"> · +{{ revenuCarryover | number:'1.0-0' }} DT report</ng-container>
+        </span>
+      </div>
+
+      <div class="fam-stat-divider"></div>
+
+      <!-- Budget distribué -->
+      <div class="fam-stat">
+        <span class="fam-stat-label">
+          <span class="dot dot-distrib"></span> Budget distribué
+        </span>
+        <span class="fam-stat-amount fam-stat-distrib">
+          {{ totalBudgetDistribue | number:'1.0-0' }}<span class="fam-stat-unit">DT</span>
+        </span>
+        <span class="fam-stat-pct">{{ pctDistribue }}% du total</span>
+      </div>
+
+      <div class="fam-stat-divider"></div>
+
+      <!-- Budget restant -->
+      <div class="fam-stat">
+        <span class="fam-stat-label">
+          <span class="dot dot-rest"></span> Budget restant
+        </span>
+        <span class="fam-stat-amount fam-stat-rest">
+          {{ budgetRestant | number:'1.0-0' }}<span class="fam-stat-unit">DT</span>
+        </span>
+        <span class="fam-stat-pct">{{ pctRestant }}% à distribuer</span>
+      </div>
+    </div>
+
+    <div class="fam-overview-progress">
+      <div class="fam-overview-track">
+        <div class="fam-overview-fill" [style.width.%]="pctDistribue"></div>
+      </div>
+      <!-- Légende dynamique : la partie gauche reflète le montant
+           effectivement distribué (= consommé sur le total des revenus). -->
+      <div class="fam-overview-legend">
+        <span>{{ totalBudgetDistribue | number:'1.0-0' }} DT distribué</span>
+        <span>{{ poolDistribuable | number:'1.0-0' }} DT disponible</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SEARCH + FILTER BAR ── -->
+  <div class="famille-toolbar">
+    <div class="search-wrap">
+      <span class="material-icons-outlined">search</span>
+      <input type="text" class="search-input" placeholder="Rechercher un membre..."
+             [(ngModel)]="search" name="search">
+    </div>
+    <div class="toolbar-divider"></div>
+    <button class="filter-btn" [class.active]="filter === 'all'" (click)="setFilter('all')">
+      <span class="material-icons-outlined">people_alt</span> Tous
+    </button>
+    <button class="filter-btn" [class.active]="filter === 'ADMINISTRATEUR'" (click)="setFilter('ADMINISTRATEUR')">
+      <span class="material-icons-outlined">shield</span> Admin
+    </button>
+    <button class="filter-btn" [class.active]="filter === 'GESTIONNAIRE'" (click)="setFilter('GESTIONNAIRE')">
+      <span class="material-icons-outlined">manage_accounts</span> Gestionnaire
+    </button>
+    <button class="filter-btn" [class.active]="filter === 'CONSULTANT'" (click)="setFilter('CONSULTANT')">
+      <span class="material-icons-outlined">visibility</span> Consultant
+    </button>
+  </div>
+
+  <!-- ── LOADING / EMPTY / LIST ── -->
+  <ng-container *ngIf="!loading; else loadingTpl">
+    <ng-container *ngIf="visibleMembers.length > 0; else emptyTpl">
+      <div class="members-grid">
+        <div class="member-card" *ngFor="let m of visibleMembers" [class.is-owner]="m.isOwner">
+          <span *ngIf="m.isOwner" class="material-icons-outlined owner-crown">workspace_premium</span>
+
+          <div class="member-card-header">
+            <div class="member-avatar" [style.background]="avatarGradient(m)">
+              {{ initials(m) }}
+              <span class="status-dot" [class.offline]="!m.active"></span>
+            </div>
+            <div class="member-info">
+              <p class="member-name">{{ m.firstName }} {{ m.lastName }}</p>
+              <p class="member-phone">
+                <span class="material-icons-outlined" style="font-size:12px;opacity:0.5">phone</span>
+                {{ m.phone || '—' }}
+              </p>
+            </div>
+          </div>
+
+          <div class="member-role-row">
+            <span class="role-badge" [ngClass]="roleClass(m.role)">
+              <span class="role-dot"></span>{{ roleLabel(m.role) }}
+            </span>
+            <span *ngIf="m.isOwner" class="badge"
+                  style="background:rgba(55,124,244,0.1);color:#377CF4;font-size:11px;border-radius:20px;padding:3px 9px;">
+              Chef de famille
+            </span>
+          </div>
+
+          <div class="member-stats-row three-cols">
+            <div class="member-stat-box">
+              <div class="ms-label">Revenu (mois)</div>
+              <div class="ms-value income">{{ m.income ? (m.income | number:'1.0-0') + ' DT' : '—' }}</div>
+            </div>
+            <div class="member-stat-box">
+              <div class="ms-label">Dépenses (mois)</div>
+              <div class="ms-value spend">{{ m.spend ? (m.spend | number:'1.0-0') + ' DT' : '—' }}</div>
+            </div>
+            <div class="member-stat-box">
+              <div class="ms-label">Budget (mois)</div>
+              <div class="ms-value budget">{{ budgetTotal(m) > 0 ? (budgetTotal(m) | number:'1.0-0') + ' DT' : '—' }}</div>
+              <!-- Sous-info "report" : TOUJOURS visible (même à 0 DT) pour
+                   que la mise en page des cartes reste alignée d'un membre
+                   à l'autre. Couleur verte si > 0, grise si = 0. -->
+              <div [style.font-size.px]="10.5"
+                   [style.color]="m.carryover > 0 ? '#10b981' : '#94a3b8'"
+                   style="margin-top:2px;">
+                + {{ m.carryover | number:'1.0-0' }} DT report
+              </div>
+            </div>
+          </div>
+
+          <div class="member-budget-bar">
+            <div class="bar-labels">
+              <span>Budget utilisé</span>
+              <span class="pct">{{ budgetPct(m) }}%</span>
+            </div>
+            <div class="budget-progress">
+              <div class="fill" [style.width.%]="budgetPct(m)" [style.background]="progressColor(budgetPct(m))"></div>
+            </div>
+            <div class="bar-labels" style="margin-top:6px;margin-bottom:0;opacity:0.7;">
+              <span>Reste à vivre</span>
+              <span>{{ (remainingBudget(m) | number:'1.0-0') }} DT</span>
+            </div>
+          </div>
+
+          <div class="member-card-actions">
+            <button class="member-action-btn edit-btn" (click)="openEditModal(m)">
+              <span class="material-icons-outlined" style="font-size:16px">edit</span> Modifier
+            </button>
+            <button *ngIf="!m.isOwner" class="member-action-btn delete-btn" (click)="askDelete(m)">
+              <span class="material-icons-outlined" style="font-size:16px">delete</span> Supprimer
+            </button>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+  </ng-container>
+
+  <ng-template #loadingTpl>
+    <div class="fb-empty">
+      <div class="empty-illustration"><span class="material-icons-outlined">hourglass_empty</span></div>
+      <h5 class="fw-bold mb-2">Chargement…</h5>
+    </div>
+  </ng-template>
+
+  <ng-template #emptyTpl>
+    <div class="fb-empty">
+      <div class="empty-illustration"><span class="material-icons-outlined">group_off</span></div>
+      <h5 class="fw-bold mb-2">Aucun membre trouvé</h5>
+      <p class="text-secondary mb-4" style="max-width:320px">
+        Aucun membre ne correspond à votre recherche. Essayez d'autres termes ou ajoutez un nouveau membre.
+      </p>
+      <button class="btn btn-grd btn-grd-primary d-flex align-items-center gap-2 mx-auto"
+              (click)="openAddModal()" style="border-radius:10px;">
+        <span class="material-icons-outlined" style="font-size:18px">person_add</span>
+        Ajouter un membre
+      </button>
+    </div>
+  </ng-template>
+
+  <!-- ── ADD / EDIT MODAL ── -->
+  <div class="fb-fm-overlay" *ngIf="modalOpen" (click)="closeModal()">
+    <div class="fb-fm-card" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+      <div class="accent"></div>
+
+      <div class="fb-fm-head">
+        <div class="fb-fm-head-icon">
+          <i class="material-icons-outlined">{{ isEditing ? 'edit' : 'person_add' }}</i>
+        </div>
+        <div style="flex:1; min-width:0;">
+          <h5 class="fb-fm-title">{{ isEditing ? 'Modifier le membre' : 'Ajouter un membre' }}</h5>
+          <p class="fb-fm-sub">Renseignez les informations du membre</p>
+        </div>
+        <button type="button" class="fb-fm-close" (click)="closeModal()" aria-label="Fermer">
+          <i class="material-icons-outlined">close</i>
+        </button>
+      </div>
+
+      <form class="fb-fm-form" (ngSubmit)="saveMember()" #f="ngForm" novalidate>
+        <!-- ── Photo de profil — admin only, edit mode, en haut du modal ── -->
+        <div class="fb-fm-photo-block" *ngIf="isAdmin && isEditing">
+          <div class="fb-fm-photo-avatar">
+            <img *ngIf="draft.photoPreview || draft.photoUrl"
+                 [src]="draft.photoPreview || draft.photoUrl"
+                 alt="Photo de profil">
+            <div *ngIf="!(draft.photoPreview || draft.photoUrl)" class="fb-fm-photo-fallback">
+              <i class="material-icons-outlined">person</i>
+            </div>
+          </div>
+          <div class="fb-fm-photo-info">
+            <div class="fb-fm-photo-title">Photo de profil</div>
+            <div class="fb-fm-photo-subtitle">JPG, PNG ou GIF max 2 MB</div>
+            <div class="fb-fm-photo-actions">
+              <button type="button" class="fb-fm-photo-btn change" (click)="photoInput.click()">
+                <i class="material-icons-outlined">file_upload</i> Changer
+              </button>
+              <button type="button" class="fb-fm-photo-btn remove"
+                      [disabled]="!(draft.photoPreview || draft.photoUrl)"
+                      (click)="clearPhoto()">
+                <i class="material-icons-outlined">delete</i> Supprimer
+              </button>
+            </div>
+            <input #photoInput type="file" name="photo" accept="image/jpeg,image/png,image/gif"
+                   (change)="onPhotoChange($event)" hidden>
+          </div>
+        </div>
+
+        <div class="fb-fm-row">
+          <div class="fb-fm-field">
+            <label><i class="material-icons-outlined">person</i> Prénom <span class="req">*</span></label>
+            <input type="text" name="firstName" [(ngModel)]="draft.firstName"
+                   (ngModelChange)="onNameChange()" placeholder="Prénom" required>
+          </div>
+          <div class="fb-fm-field">
+            <label><i class="material-icons-outlined">badge</i> Nom <span class="req">*</span></label>
+            <input type="text" name="lastName" [(ngModel)]="draft.lastName"
+                   (ngModelChange)="onNameChange()" placeholder="Nom" required>
+          </div>
+        </div>
+
+        <div class="fb-fm-field">
+          <label><i class="material-icons-outlined">phone</i> Téléphone</label>
+          <div class="fb-fm-phone-wrap" style="display:flex; gap:8px; align-items:stretch;">
+            <span class="prefix">+216</span>
+            <input type="tel" name="phone" [(ngModel)]="draft.phone"
+                   placeholder="XX XXX XXX"
+                   inputmode="numeric" maxlength="8" pattern="\d*"
+                   (input)="onPhoneInput($event)"
+                   [disabled]="memberPhoneVerified && !isEditing"
+                   style="flex:1; min-width:0;">
+            <!-- Bouton Vérifier : visible en CREATE uniquement (en EDIT on
+                 garde le numéro déjà persisté tant que l'utilisateur ne
+                 l'a pas modifié, ce qui re-déclenche resetOtpState). -->
+            <button *ngIf="!isEditing || (isEditing && !memberPhoneVerified)"
+                    type="button"
+                    (click)="sendMemberOtp()"
+                    [disabled]="memberOtpStatus === 'sending' || memberPhoneVerified"
+                    style="padding:0 14px; border:none; border-radius:10px;
+                           background: var(--bs-primary, #2E3F8F); color:#fff;
+                           font-size:12px; font-weight:600; cursor:pointer;
+                           white-space:nowrap;">
+              {{ memberPhoneVerified ? 'Vérifié ✓' : (memberOtpStatus === 'sending' ? 'Envoi…' : (memberOtpRequested ? 'Renvoyer' : 'Vérifier')) }}
+            </button>
+          </div>
+
+          <!-- Champ code OTP : visible après envoi du SMS, masqué une fois vérifié -->
+          <div *ngIf="memberOtpRequested && !memberPhoneVerified"
+               style="display:flex; gap:8px; align-items:stretch; margin-top:8px;">
+            <input type="text" name="memberOtpCode" [(ngModel)]="memberOtpCode"
+                   placeholder="Code reçu par SMS" inputmode="numeric" maxlength="6"
+                   style="flex:1;">
+            <button type="button" (click)="verifyMemberOtp()"
+                    [disabled]="memberOtpStatus === 'verifying'"
+                    style="padding:0 14px; border:none; border-radius:10px;
+                           background: #22c55e; color:#fff;
+                           font-size:12px; font-weight:600; cursor:pointer;
+                           white-space:nowrap;">
+              {{ memberOtpStatus === 'verifying' ? '…' : 'Valider' }}
+            </button>
+          </div>
+
+          <div *ngIf="memberOtpError" style="color:#ef4444; font-size:12px; margin-top:6px;">{{ memberOtpError }}</div>
+          <div *ngIf="memberPhoneVerified && memberOtpStatus === 'verified'"
+               style="color:#22c55e; font-size:12px; margin-top:6px;">Numéro vérifié avec succès.</div>
+        </div>
+
+        <div class="fb-fm-field">
+          <label><i class="material-icons-outlined">shield</i> Rôle <span class="req">*</span></label>
+          <select name="role" [(ngModel)]="draft.role" required>
+            <option value="GESTIONNAIRE">Gestionnaire</option>
+            <option value="CONSULTANT">Consultant</option>
+          </select>
+        </div>
+
+        <div class="fb-fm-field" *ngIf="!isEditing">
+          <label><i class="material-icons-outlined">lock</i> Mot de passe <span class="req">*</span></label>
+          <input type="password" name="password" [(ngModel)]="draft.password"
+                 placeholder="Mot de passe du membre" required>
+        </div>
+
+        <!-- Budget mensuel — admin (chef de famille) only, in edit mode -->
+        <div class="fb-fm-field" *ngIf="isAdmin && isEditing">
+          <label><i class="material-icons-outlined">savings</i> Budget mensuel (DT)</label>
+          <input type="number" name="budget" min="0" step="0.01"
+                 [(ngModel)]="draft.budget" placeholder="Entrer le budget en DT">
+          <!-- Reste à vivre auto-transféré en report : visible si > 0. -->
+          <div *ngIf="editingResteAVivre > 0"
+               style="margin-top:8px; padding:8px 12px; border-radius:10px;
+                      background:rgba(34,197,94,0.10);
+                      color:#16a34a; font-size:12.5px; line-height:1.4;">
+            <i class="material-icons-outlined" style="vertical-align:middle; font-size:16px; margin-right:4px;">add_circle_outline</i>
+            Reste à vivre non consommé : <strong>+{{ editingResteAVivre | number:'1.0-0' }} DT</strong>
+            sera transféré en report et s'ajoutera au nouveau budget.<br>
+            <span style="opacity:0.85;">
+              Budget total après modification : <strong>{{ (draft.budget || 0) + editingResteAVivre | number:'1.0-0' }} DT</strong>
+            </span>
+          </div>
+        </div>
+
+        <div *ngIf="formError" class="fb-fm-alert">{{ formError }}</div>
+
+        <div class="fb-fm-actions">
+          <button type="button" class="fb-fm-btn-cancel" (click)="closeModal()">Annuler</button>
+          <button type="submit" class="fb-fm-btn-save" [disabled]="saving">
+            <i class="material-icons-outlined">{{ saving ? 'hourglass_top' : (isEditing ? 'save' : 'person_add') }}</i>
+            {{ saving ? 'Enregistrement…' : (isEditing ? 'Enregistrer' : 'Ajouter') }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ── DELETE CONFIRMATION ── -->
+  <div class="fb-fm-overlay" *ngIf="deletingId !== null" (click)="cancelDelete()">
+    <div class="fb-fm-card" style="max-width:420px" (click)="$event.stopPropagation()">
+      <div class="accent" style="background:linear-gradient(90deg,#dc2626,#ef4444);"></div>
+      <div class="fb-fm-del-body">
+        <div class="fb-fm-del-icon"><span class="material-icons-outlined">delete_forever</span></div>
+        <h5 class="fw-bold mb-2">Supprimer "{{ deletingName }}" ?</h5>
+        <p class="text-secondary mb-0" style="font-size:13.5px">
+          Cette action est irréversible. Le membre sera retiré de la famille.
+        </p>
+      </div>
+      <div class="fb-fm-actions" style="justify-content:center;">
+        <button type="button" class="fb-fm-btn-cancel" (click)="cancelDelete()">Annuler</button>
+        <button type="button" class="fb-fm-btn-delete" (click)="confirmDelete()">
+          <span class="material-icons-outlined align-middle me-1" style="font-size:17px">delete</span>
+          Supprimer
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TOAST ── -->
+  <div *ngIf="toast.show" class="fb-fm-toast" [ngClass]="toast.type">
+    <span class="material-icons-outlined">
+      {{ toast.type === 'success' ? 'check_circle' : toast.type === 'danger' ? 'delete_forever' : toast.type === 'warning' ? 'warning' : 'info' }}
+    </span>
+    {{ toast.msg }}
+  </div>

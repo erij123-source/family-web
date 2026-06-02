@@ -1,0 +1,94 @@
+<div class="fb-rv-overlay" *ngIf="open" (click)="onBackdropClick($event)">
+  <div class="fb-rv-card" role="dialog" aria-modal="true">
+    <div class="fb-rv-accent"></div>
+
+    <div class="fb-rv-head">
+      <div class="fb-rv-head-icon"><i class="material-icons-outlined">{{ editing ? 'edit' : 'add_circle_outline' }}</i></div>
+      <div class="fb-rv-head-text">
+        <h5 class="fb-rv-title">{{ editing ? 'Modifier le revenu' : 'Ajouter un revenu' }}</h5>
+        <p class="fb-rv-sub">Remplissez les informations du revenu</p>
+      </div>
+      <button type="button" class="fb-rv-close" (click)="close()" aria-label="Fermer">
+        <i class="material-icons-outlined">close</i>
+      </button>
+    </div>
+
+    <form (ngSubmit)="save()" #f="ngForm" novalidate class="fb-rv-form">
+
+      <!-- Membre -->
+      <div class="fb-rv-field">
+        <label><i class="material-icons-outlined">person</i> Membre <span class="req">*</span></label>
+        <select name="membreId" [(ngModel)]="form.membreId" required>
+          <option [ngValue]="null">— Sélectionner un membre —</option>
+          <option *ngFor="let m of membres" [ngValue]="m.id">
+            {{ m.user?.firstName }} {{ m.user?.lastName }}
+            <ng-container *ngIf="!m.user?.firstName && !m.user?.lastName">Membre #{{ m.id }}</ng-container>
+          </option>
+        </select>
+      </div>
+
+      <!-- Type (Fixe / Variable)  +  Catégorie -->
+      <div class="fb-rv-row two">
+        <div class="fb-rv-field">
+          <label><i class="material-icons-outlined">label</i> Type <span class="req">*</span></label>
+          <select name="kind" [(ngModel)]="form.kind" (ngModelChange)="onKindChange()" required>
+            <option value="FIXE">Revenu fixe</option>
+            <option value="VARIABLE">Revenu variable</option>
+          </select>
+        </div>
+        <div class="fb-rv-field">
+          <label><i class="material-icons-outlined">apps</i> Catégorie <span class="req">*</span></label>
+          <select name="typeName" [(ngModel)]="form.typeName" required>
+            <option value="" disabled hidden>— Catégorie —</option>
+            <option *ngFor="let p of presets" [value]="p.name">{{ p.name }}</option>
+            <option [value]="CUSTOM">Ajouter une nouvelle catégorie</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Nouvelle catégorie (apparaît quand "Ajouter une nouvelle catégorie" est sélectionné) -->
+      <div class="fb-rv-field" *ngIf="isCustom">
+        <label><i class="material-icons-outlined">edit_note</i> Préciser la catégorie <span class="req">*</span></label>
+        <input type="text" name="customTypeName"
+               [(ngModel)]="form.customTypeName"
+               placeholder="Ex : Location, Freelance, …" maxlength="40">
+      </div>
+
+      <!-- Montant -->
+      <div class="fb-rv-field">
+        <label><i class="material-icons-outlined">payments</i> Montant (DT) <span class="req">*</span></label>
+        <div class="fb-rv-suffix">
+          <input type="number" min="0" step="0.01" name="amount"
+                 [(ngModel)]="form.amount" placeholder="" required>
+          <span>DT</span>
+        </div>
+      </div>
+
+      <!-- Date de début -->
+      <div class="fb-rv-field">
+        <label><i class="material-icons-outlined">event</i> Date de début <span class="req">*</span></label>
+        <input type="date" name="perceptionDate" [(ngModel)]="form.perceptionDate" required>
+      </div>
+
+      <!-- Description -->
+      <div class="fb-rv-field">
+        <label><i class="material-icons-outlined">notes</i> Description</label>
+        <textarea name="description" rows="2" [(ngModel)]="form.description" placeholder="Détails supplémentaires…"></textarea>
+      </div>
+
+      <div *ngIf="errorMsg" class="fb-rv-alert">{{ errorMsg }}</div>
+
+      <p class="fb-rv-required-hint"><span class="req">*</span> Champs obligatoires</p>
+
+      <div class="fb-rv-actions">
+        <button type="button" class="fb-rv-btn-cancel" (click)="close()">
+          <i class="material-icons-outlined">close</i> Annuler
+        </button>
+        <button type="submit" class="fb-rv-btn-save" [disabled]="saving">
+          <i class="material-icons-outlined">{{ saving ? 'hourglass_top' : 'check' }}</i>
+          {{ saving ? 'Enregistrement…' : 'Enregistrer' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

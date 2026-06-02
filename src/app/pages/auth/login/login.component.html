@@ -1,0 +1,302 @@
+<style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ── Full-page background ── */
+    .fb-auth-page {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    /* ── Card ── */
+    .fb-card {
+      width: 100%;
+      max-width: 430px;
+      border-radius: 16px;
+      border-top: 4px solid transparent;
+      border-image: linear-gradient(to right, #7928ca, #ff0080, #04e09a, #e0d504) 1;
+      border-image-slice: 1;
+      overflow: hidden;
+    }
+    .fb-card-inner {
+      background-image: linear-gradient(127.09deg, rgba(6, 11, 40, 0.94) 19.41%, rgba(10, 14, 35, 0.49) 76.65%);
+      background-color: var(--bs-card-bg, #070c29);
+      backdrop-filter: blur(12px);
+      padding: 40px 34px 34px;
+      border-radius: 0 0 16px 16px;
+    }
+
+    /* ── Logo ── */
+    .fb-logo { text-align: center; margin-bottom: 28px; }
+    .fb-logo img { width: 68px; height: 68px; object-fit: contain; border-radius: 50%; background: #fff; padding: 4px; box-shadow: 0 6px 20px rgba(55,124,244,0.18); }
+
+    /* ── Title ── */
+    .fb-title {
+      text-align: center;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--bs-heading-color, #e6ecf0);
+      margin-bottom: 30px;
+      line-height: 1.5;
+    }
+    .fb-title span { color: #2E3F8F; }
+
+    /* ── Form field ── */
+    .fb-field { margin-bottom: 20px; }
+    .fb-field-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 7px;
+    }
+    .fb-field-header label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--bs-body-color, #d3d7dc);
+    }
+    .fb-field-header a {
+      font-size: 12px;
+      color: #2E3F8F;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .fb-field-header a:hover { text-decoration: underline; color: #60a5fa; }
+
+    /* ── Input wrapper ──
+       Absolute-positioned icon + absolute-positioned eye button.
+       The <input> takes 100% width of the wrapper with explicit left/right
+       padding for the icons. No flex sizing, no `width:0` tricks, no
+       Bootstrap `input { width:100% }` conflict — the password placeholder
+       is guaranteed to start right after the lock icon, same as the
+       username. */
+    .fb-input {
+      position: relative;
+      width: 100%;
+      height: 46px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 10px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .fb-input:focus-within {
+      border-color: #2E3F8F;
+      box-shadow: 0 0 0 3px rgba(55,124,244, 0.15);
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .fb-input .icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 20px;
+      color: rgba(255, 255, 255, 0.4);
+      pointer-events: none;
+      line-height: 1;
+    }
+
+    .fb-input input {
+      display: block;
+      width: 100%;
+      height: 100%;
+      padding: 0 14px 0 44px;            /* room for left icon */
+      border: 0;
+      background: transparent;
+      outline: none;
+      box-shadow: none;
+      font-size: 14px;
+      font-family: 'Noto Sans', sans-serif;
+      color: #e6ecf0;
+      border-radius: 10px;
+      text-align: left;
+    }
+    .fb-input input::placeholder {
+      color: rgba(255, 255, 255, 0.35);
+      font-weight: 400;
+    }
+    [data-bs-theme="light"] .fb-input input,
+    [data-bs-theme="bodered-theme"] .fb-input input { color: #000 !important; }
+    [data-bs-theme="light"] .fb-input input::placeholder,
+    [data-bs-theme="bodered-theme"] .fb-input input::placeholder { color: rgba(0,0,0,0.4) !important; opacity: 1 !important; }
+
+    /* Variant: field has the eye-toggle button → reserve right padding */
+    .fb-input.with-eye input { padding-right: 44px; }
+
+    /* Masque l'icône œil native du navigateur (Edge/Chrome) — on garde le bouton custom */
+    .fb-input input::-ms-reveal,
+    .fb-input input::-ms-clear { display: none; }
+
+    .fb-input .btn-eye {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: 0;
+      padding: 0;
+      color: rgba(255, 255, 255, 0.4);
+      font-size: 20px;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    .fb-input .btn-eye:hover { color: #2E3F8F; }
+
+    /* Neutralise Chrome autofill yellow + centred text on saved creds */
+    .fb-input input:-webkit-autofill,
+    .fb-input input:-webkit-autofill:hover,
+    .fb-input input:-webkit-autofill:focus {
+      -webkit-text-fill-color: #e6ecf0 !important;
+      -webkit-box-shadow: 0 0 0 40px transparent inset !important;
+      caret-color: #e6ecf0;
+      transition: background-color 5000s ease-in-out 0s;
+    }
+    /* Hide Chromium's credentials/autofill icons inside password inputs */
+    .fb-input input[type="password"]::-webkit-credentials-auto-fill-button,
+    .fb-input input[type="password"]::-webkit-strong-password-auto-fill-button,
+    .fb-input input[type="password"]::-webkit-contacts-auto-fill-button {
+      display: none !important;
+      visibility: hidden !important;
+      pointer-events: none !important;
+    }
+
+    /* ── Submit button ── */
+    .fb-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      height: 48px;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #377CF4, #2E3F8F);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 600;
+      font-family: 'Noto Sans', sans-serif;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(55,124,244, 0.3);
+      margin-top: 26px;
+      transition: box-shadow 0.2s, transform 0.15s;
+    }
+    .fb-btn:hover {
+      box-shadow: 0 6px 20px rgba(55,124,244, 0.4);
+      transform: translateY(-1px);
+      background: linear-gradient(135deg, #2E6BE0, #26336F);
+    }
+    .fb-btn:active { transform: translateY(0); }
+    .fb-btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+    .fb-btn .material-icons-outlined { font-size: 20px; }
+
+    /* ── Footer ── */
+    .fb-footer {
+      text-align: center;
+      margin-top: 24px;
+      font-size: 13.5px;
+      color: rgba(255, 255, 255, 0.5);
+    }
+    .fb-footer a {
+      color: #2E3F8F;
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .fb-footer a:hover { text-decoration: underline; color: #60a5fa; }
+
+    /* ── Error banner ── */
+    .fb-error {
+      margin-top: 14px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-size: 13px;
+      color: #fecaca;
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 480px) {
+      .fb-card-inner { padding: 30px 22px 26px; }
+      .fb-title { font-size: 16px; }
+      .fb-logo img { width: 56px; height: 56px; }
+    }
+  </style>
+
+  <div class="fb-auth-page">
+    <!-- Sélecteur de thème fixé en haut à droite — partagé avec toutes
+         les pages d'auth pour que l'utilisateur choisisse son apparence
+         avant même de se connecter. -->
+    <div style="position: fixed; top: 18px; right: 18px; z-index: 1050;">
+      <app-theme-switcher></app-theme-switcher>
+    </div>
+
+    <div class="fb-card">
+      <div class="fb-card-inner">
+
+        <!-- Logo -->
+        <div class="fb-logo">
+          <img src="/assets/images/app-logo.jpeg" alt="FamilyBalance">
+        </div>
+
+        <!-- Title -->
+        <h4 class="fb-title">Connectez-vous à votre <span>espace familial</span></h4>
+
+        <!-- Form -->
+        <form id="loginForm" (ngSubmit)="onSubmit()" #f="ngForm" novalidate>
+
+          <!-- Identifiant -->
+          <div class="fb-field">
+            <div class="fb-field-header">
+              <label for="inputIdentifiant">Identifiant</label>
+            </div>
+            <div class="fb-input">
+              <span class="material-icons-outlined icon">person_outline</span>
+              <input type="text" id="inputIdentifiant" name="username"
+                     [(ngModel)]="username"
+                     placeholder="Entrez votre identifiant"
+                     autocomplete="username" required>
+            </div>
+          </div>
+
+          <!-- Mot de passe -->
+          <div class="fb-field">
+            <div class="fb-field-header">
+              <label for="inputPassword">Mot de passe</label>
+              <a routerLink="/auth/forgot-password">Mot de passe oublié ?</a>
+            </div>
+            <div class="fb-input with-eye">
+              <span class="material-icons-outlined icon">lock_outline</span>
+              <input type="password" id="inputPassword" name="password"
+                     [(ngModel)]="password"
+                     placeholder="Votre mot de passe"
+                     autocomplete="current-password" required>
+              <button type="button" class="btn-eye" id="togglePwd" aria-label="Afficher le mot de passe">
+                <span class="material-icons-outlined">visibility_off</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Error -->
+          <div *ngIf="errorMsg" class="fb-error" role="alert">{{ errorMsg }}</div>
+
+          <!-- Submit -->
+          <button type="submit" class="fb-btn" [disabled]="submitting">
+            <span class="material-icons-outlined">{{ submitting ? 'hourglass_top' : 'lock_open' }}</span>
+            {{ submitting ? 'Connexion…' : 'Se connecter' }}
+          </button>
+        </form>
+
+        <!-- Footer -->
+        <div class="fb-footer">
+          Pas encore de compte ? <a routerLink="/auth/register">Créer un compte</a>
+        </div>
+
+      </div>
+    </div>
+  </div>

@@ -1,0 +1,193 @@
+<style>
+    /* ══ Stats Revenus — chart-first layout ══ */
+    .stats-page-header {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 16px; flex-wrap: wrap; margin: -4px 0 18px;
+    }
+    .stats-page-header h3 {
+      font-size: 24px; font-weight: 800; margin: 0 0 2px; letter-spacing: -0.3px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .stats-page-header .subtitle { font-size: 13px; color: #000000; margin: 0; opacity: 0.85; }
+
+    /* ── Mois + Année picker pills (mint, shared across all stats pages) ── */
+    .period-pills { display: inline-flex; gap: 8px; align-items: center; flex-shrink: 0; }
+    .period-pill {
+      position: relative; display: inline-flex; align-items: center;
+      gap: 4px; padding: 6px 14px; border-radius: 999px;
+      border: 1.5px solid #34d399; background: #ecfdf5; color: #10b981;
+      font-size: 12.5px; font-weight: 700; letter-spacing: 0.2px;
+      cursor: pointer; transition: all .15s;
+      min-width: 84px; justify-content: center; user-select: none;
+    }
+
+    /* ── Année : champ stepper (input number, flèches up/down) ── */
+    .period-pill-year { padding: 2px 4px 2px 10px; cursor: text; }
+    .period-year-input {
+      border: none; background: transparent; outline: none;
+      font: inherit; color: inherit; letter-spacing: inherit;
+      width: 100%; text-align: center; padding: 0; margin: 0;
+    }
+    /* garder les flèches natives visibles (Chrome/Edge/WebKit) */
+    .period-year-input::-webkit-outer-spin-button,
+    .period-year-input::-webkit-inner-spin-button {
+      -webkit-appearance: inner-spin-button; opacity: 1; height: 22px;
+    }
+
+    /* Title-and-pickers row inside each chart card header. */
+    .card-header-row {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 10px; flex-wrap: wrap;
+    }
+    .card-header-row .chart-title { margin: 0; flex: 1 1 auto; min-width: 0; }
+    .period-pill:hover { background: #d1fae5; border-color: #10b981; }
+    .period-pill .caret { font-size: 16px; margin-left: 2px; margin-right: -4px; }
+    .period-menu {
+      position: absolute; top: 110%; left: 0; right: 0; margin: 0;
+      padding: 4px; list-style: none; background: #fff;
+      border: 1px solid #d1fae5; border-radius: 14px;
+      box-shadow: 0 8px 24px rgba(16,185,129,0.18);
+      z-index: 50; max-height: 280px; overflow-y: auto;
+    }
+    .period-menu li {
+      padding: 7px 12px; border-radius: 8px;
+      font-size: 13px; font-weight: 600; color: #334155;
+      cursor: pointer; text-align: center;
+    }
+    .period-menu li:hover { background: #ecfdf5; color: #10b981; }
+    .period-menu li.active {
+      background: linear-gradient(135deg, #10b981, #34d399); color: #fff;
+    }
+
+    /* Chart cards */
+    .chart-card {
+      background: var(--bs-body-bg); border: 1px solid var(--bs-border-color);
+      border-radius: 18px; box-shadow: 0 2px 14px rgba(0,0,0,0.05);
+      transition: box-shadow .2s;
+    }
+    .chart-card:hover { box-shadow: 0 8px 28px rgba(0,0,0,0.08); }
+    .chart-card .card-header {
+      background: transparent; border-bottom: 1px solid var(--bs-border-color);
+      padding: 18px 22px 14px;
+    }
+    .chart-title { font-size: 15px; font-weight: 700; margin: 0; letter-spacing: -0.2px; }
+    .chart-subtitle { font-size: 12px; opacity: 0.6; margin: 2px 0 0; }
+
+    /* Hero chart fills its card */
+    #rev-area-monthly { width: 100%; }
+  </style>
+
+  <!-- ── PAGE HEADER + line-chart picker (top-right) ── -->
+  <div class="stats-page-header">
+    <div>
+      <h3>
+        <span class="material-icons-outlined" style="font-size:26px;color:#16a34a;">trending_up</span>
+        Statistiques Revenus
+      </h3>
+      <p class="subtitle">Analyse de l'évolution et de la répartition des revenus</p>
+    </div>
+    <div class="period-pills">
+      <div class="period-pill" (click)="toggleMonthMenu('line', $event)">
+        <span>{{ monthLabel(anchors.line.month) }}</span>
+        <span class="material-icons-outlined caret">expand_more</span>
+        <ul class="period-menu" *ngIf="anchors.line.monthOpen" (click)="$event.stopPropagation()">
+          <li *ngFor="let m of months" [class.active]="m.value === anchors.line.month"
+              (click)="setMonth('line', m.value, $event)">{{ m.label }}</li>
+        </ul>
+      </div>
+      <div class="period-pill period-pill-year">
+        <input type="number" class="period-year-input"
+               inputmode="numeric" min="1900" max="2999" step="1"
+               [value]="anchors.line.year"
+               (click)="$event.stopPropagation()"
+               (input)="setYearFromInput('line', $any($event.target).value)">
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ ROW 1 : Hero — Évolution des Revenus ══ -->
+  <div class="row g-3 mb-3">
+    <div class="col-12">
+      <div class="card chart-card">
+        <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+          <div>
+            <p class="chart-title">Évolution des Revenus</p>
+            <p class="chart-subtitle">
+              12 mois jusqu'à {{ monthLabel(anchors.line.month) }} {{ anchors.line.year }}
+            </p>
+          </div>
+          <span class="badge"
+                style="background:rgba(34,197,94,0.12);color:#16a34a;border-radius:20px;padding:5px 11px;font-size:11.5px;font-weight:700;letter-spacing:0.4px;">
+            REVENUS
+          </span>
+        </div>
+        <div class="card-body pt-0">
+          <div id="rev-area-monthly"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ ROW 2 : Donut catégories + Donut membres — each with its own picker ══ -->
+  <div class="row g-3">
+    <div class="col-12 col-xl-6">
+      <div class="card chart-card h-100">
+        <div class="card-header">
+          <div class="card-header-row">
+            <p class="chart-title">Répartition par Catégorie de Revenu</p>
+            <div class="period-pills">
+              <div class="period-pill" (click)="toggleMonthMenu('cat', $event)">
+                <span>{{ monthLabel(anchors.cat.month) }}</span>
+                <span class="material-icons-outlined caret">expand_more</span>
+                <ul class="period-menu" *ngIf="anchors.cat.monthOpen" (click)="$event.stopPropagation()">
+                  <li *ngFor="let m of months" [class.active]="m.value === anchors.cat.month"
+                      (click)="setMonth('cat', m.value, $event)">{{ m.label }}</li>
+                </ul>
+              </div>
+              <div class="period-pill period-pill-year">
+                <input type="number" class="period-year-input"
+                       inputmode="numeric" min="1900" max="2999" step="1"
+                       [value]="anchors.cat.year"
+                       (click)="$event.stopPropagation()"
+                       (input)="setYearFromInput('cat', $any($event.target).value)">
+              </div>
+            </div>
+          </div>
+          <p class="chart-subtitle">12 mois jusqu'à {{ monthLabel(anchors.cat.month) }} {{ anchors.cat.year }}</p>
+        </div>
+        <div class="card-body pt-0">
+          <div id="rev-donut-categories"></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-xl-6">
+      <div class="card chart-card h-100">
+        <div class="card-header">
+          <div class="card-header-row">
+            <p class="chart-title">Répartition par Membre de Famille</p>
+            <div class="period-pills">
+              <div class="period-pill" (click)="toggleMonthMenu('mem', $event)">
+                <span>{{ monthLabel(anchors.mem.month) }}</span>
+                <span class="material-icons-outlined caret">expand_more</span>
+                <ul class="period-menu" *ngIf="anchors.mem.monthOpen" (click)="$event.stopPropagation()">
+                  <li *ngFor="let m of months" [class.active]="m.value === anchors.mem.month"
+                      (click)="setMonth('mem', m.value, $event)">{{ m.label }}</li>
+                </ul>
+              </div>
+              <div class="period-pill period-pill-year">
+                <input type="number" class="period-year-input"
+                       inputmode="numeric" min="1900" max="2999" step="1"
+                       [value]="anchors.mem.year"
+                       (click)="$event.stopPropagation()"
+                       (input)="setYearFromInput('mem', $any($event.target).value)">
+              </div>
+            </div>
+          </div>
+          <p class="chart-subtitle">12 mois jusqu'à {{ monthLabel(anchors.mem.month) }} {{ anchors.mem.year }}</p>
+        </div>
+        <div class="card-body pt-0">
+          <div id="rev-pie-members"></div>
+        </div>
+      </div>
+    </div>
+  </div>

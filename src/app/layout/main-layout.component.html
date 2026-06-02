@@ -1,0 +1,299 @@
+<!-- start header -->
+<header class="top-header">
+  <nav class="navbar navbar-expand align-items-center gap-4">
+    <div class="d-flex align-items-center" style="gap:0;">
+      <div class="btn-toggle">
+        <a href="javascript:;"><i class="material-icons-outlined">menu</i></a>
+      </div>
+      <a routerLink="/" class="d-flex align-items-center text-decoration-none" style="gap:6px;">
+        <i class="material-icons-outlined" style="color:#377CF4;font-size:22px;">home</i>
+        <span style="font-weight:600;font-size:15px;color:var(--bs-body-color);">Accueil</span>
+      </a>
+    </div>
+    <div class="flex-grow-1"></div>
+    <ul class="navbar-nav gap-1 nav-right-links align-items-center">
+      <li class="nav-item dropdown">
+        <a href="javascript:;" role="button" data-bs-toggle="dropdown"
+           class="nav-link dropdown-toggle dropdown-toggle-nocaret rounded-circle border d-flex align-items-center justify-content-center p-0"
+           title="Changer de thème"
+           style="width:45px;height:45px;">
+          <i class="material-icons-outlined" style="font-size:22px;color:var(--bs-body-color);">{{ currentThemeIcon }}</i>
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end shadow" style="min-width:180px;">
+          <li>
+            <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="javascript:;" (click)="applyThemeQuick('blue-theme')"
+               [class.active]="currentTheme === 'blue-theme'">
+              <i class="material-icons-outlined">contactless</i>Blue
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="javascript:;" (click)="applyThemeQuick('light')"
+               [class.active]="currentTheme === 'light'">
+              <i class="material-icons-outlined">light_mode</i>Light
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="javascript:;" (click)="applyThemeQuick('dark')"
+               [class.active]="currentTheme === 'dark'">
+              <i class="material-icons-outlined">dark_mode</i>Dark
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="javascript:;" (click)="applyThemeQuick('semi-dark')"
+               [class.active]="currentTheme === 'semi-dark'">
+              <i class="material-icons-outlined">contrast</i>Semi Dark
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="javascript:;" (click)="applyThemeQuick('bodered-theme')"
+               [class.active]="currentTheme === 'bodered-theme'">
+              <i class="material-icons-outlined">border_style</i>Bordered
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="nav-item dropdown">
+        <a href="javascript:;" class="dropdown-toggle dropdown-toggle-nocaret" data-bs-toggle="dropdown">
+          <!-- User avatar — uploaded photo if present, otherwise initials on a gradient -->
+          <img *ngIf="avatarDataUrl" [src]="avatarDataUrl" alt="avatar"
+               class="rounded-circle border"
+               style="width:45px;height:45px;object-fit:cover;">
+          <span *ngIf="!avatarDataUrl"
+                class="fb-avatar-dot rounded-circle p-1 border d-inline-flex align-items-center justify-content-center"
+                style="width:45px;height:45px;background:linear-gradient(135deg,#7c3aed,#377CF4);color:#fff;font-weight:700;">
+            {{ initials }}
+          </span>
+        </a>
+        <div class="dropdown-menu dropdown-user dropdown-menu-end shadow">
+          <div class="p-3 text-center border-bottom">
+            <img *ngIf="avatarDataUrl" [src]="avatarDataUrl" alt="avatar"
+                 class="rounded-circle shadow mb-2"
+                 style="width:72px;height:72px;object-fit:cover;">
+            <span *ngIf="!avatarDataUrl"
+                  class="fb-avatar-dot rounded-circle shadow mb-2 d-inline-flex align-items-center justify-content-center"
+                  style="width:72px;height:72px;background:linear-gradient(135deg,#7c3aed,#377CF4);color:#fff;font-size:24px;font-weight:700;">
+              {{ initials }}
+            </span>
+            <h6 class="mb-0 fw-bold">{{ fullName }}</h6>
+            <span *ngIf="roleLabel" class="badge bg-danger bg-opacity-15 text-danger">
+              <span class="material-icons-outlined" style="font-size:11px;vertical-align:middle">shield</span> {{ roleLabel }}
+            </span>
+          </div>
+          <a class="dropdown-item d-flex align-items-center gap-2 py-2"
+             href="javascript:;" (click)="openProfile($event)">
+            <i class="material-icons-outlined">person_outline</i>Mon profil
+          </a>
+          <a *ngIf="isAdmin" class="dropdown-item d-flex align-items-center gap-2 py-2" routerLink="/famille">
+            <i class="material-icons-outlined">group</i>Ma famille
+          </a>
+          <hr class="dropdown-divider">
+          <a class="dropdown-item d-flex align-items-center gap-2 py-2 text-danger"
+             href="javascript:;" (click)="logout($event)">
+            <i class="material-icons-outlined">power_settings_new</i>Déconnexion
+          </a>
+        </div>
+      </li>
+    </ul>
+  </nav>
+</header>
+<!-- end top header -->
+
+<!-- start sidebar -->
+<aside class="sidebar-wrapper" data-simplebar="true">
+  <style>
+    .fb-nav-label { padding: 14px 16px 4px; font-size: 10px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: rgba(255,255,255,0.3); }
+    .fb-nav-link { display: flex; align-items: center; gap: 12px; padding: 10px 14px; margin: 2px 10px; border-radius: 10px; color: rgba(255,255,255,0.6); text-decoration: none; transition: all 0.3s ease; position: relative; }
+    .fb-nav-link:hover { background: rgba(255,255,255,0.08); color: white; transform: translateX(4px); }
+    .fb-nav-link.active { background: linear-gradient(135deg, #377CF4, #2E3F8F); color: white; box-shadow: 0 4px 16px rgba(55,124,244,0.3); }
+    .fb-nav-link.active::before { content: ""; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 3px; height: 60%; background: #16A34A; border-radius: 0 3px 3px 0; }
+    .fb-nav-icon { width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; border-radius: 8px; font-size: 17px; flex-shrink: 0; background: rgba(255,255,255,0.06); }
+    .fb-nav-link.active .fb-nav-icon { background: rgba(255,255,255,0.15); }
+    .fb-nav-text { font-size: 13.5px; font-weight: 500; flex: 1; }
+    .fb-badge { background: #16A34A; color: white; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 20px; }
+    .fb-divider { height: 1px; background: rgba(255,255,255,0.07); margin: 6px 16px; }
+    .fb-nav-link.logout { color: rgba(255,120,120,0.7); }
+    .fb-nav-link.logout:hover { color: #ff8080; background: rgba(255,100,100,0.08); }
+    .fb-submenu { list-style: none; padding: 2px 0; margin: 0; overflow: hidden; max-height: 0; transition: max-height 0.3s ease; }
+    .fb-submenu.open { max-height: 300px; }
+    .fb-sub-link { display: flex; align-items: center; gap: 10px; padding: 8px 14px; margin: 2px 10px 2px 20px; border-radius: 10px; color: rgba(255,255,255,0.55); text-decoration: none; font-size: 13px; font-weight: 500; transition: all 0.2s; }
+    .fb-sub-link::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.25); flex-shrink: 0; }
+    .fb-sub-link:hover { color: white; background: rgba(255,255,255,0.08); }
+    .fb-sub-link.active { color: white; background: linear-gradient(135deg, #377CF4, #2E3F8F); box-shadow: 0 4px 12px rgba(55,124,244,0.3); }
+    .fb-sub-link.active::before { background: white; }
+    .stats-arrow { transition: transform 0.3s; font-size: 16px !important; margin-left: auto; }
+  </style>
+
+  <div class="sidebar-header">
+    <div class="logo-icon">
+      <img src="/assets/images/app-logo.jpeg" class="logo-img" alt="FamilyBalance Logo">
+    </div>
+    <div class="logo-name flex-grow-1">
+      <h5 class="mb-0">FamilyBalance</h5>
+    </div>
+  </div>
+
+  <div class="sidebar-nav">
+    <ul class="metismenu" id="sidenav">
+      <li><div class="fb-nav-label">Général</div></li>
+
+      <li>
+        <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="fb-nav-link">
+          <div class="fb-nav-icon"><i class="material-icons-outlined">dashboard</i></div>
+          <span class="fb-nav-text">Accueil</span>
+        </a>
+      </li>
+
+      <li *ngIf="isAdmin">
+        <a routerLink="/famille" routerLinkActive="active" class="fb-nav-link">
+          <div class="fb-nav-icon"><i class="material-icons-outlined">group</i></div>
+          <span class="fb-nav-text">Famille</span>
+        </a>
+      </li>
+
+      <li><div class="fb-divider"></div></li>
+
+      <li><div class="fb-nav-label">Finances</div></li>
+
+      <li>
+        <a routerLink="/revenus" routerLinkActive="active" class="fb-nav-link">
+          <div class="fb-nav-icon"><i class="material-icons-outlined">account_balance_wallet</i></div>
+          <span class="fb-nav-text">Revenus</span>
+        </a>
+      </li>
+
+      <li>
+        <a routerLink="/charges" routerLinkActive="active" class="fb-nav-link">
+          <div class="fb-nav-icon"><i class="material-icons-outlined">credit_card</i></div>
+          <span class="fb-nav-text">Charges</span>
+        </a>
+      </li>
+
+      <li>
+        <a routerLink="/factures" routerLinkActive="active" class="fb-nav-link">
+          <div class="fb-nav-icon"><i class="material-icons-outlined">receipt_long</i></div>
+          <span class="fb-nav-text">Factures</span>
+        </a>
+      </li>
+
+      <li><div class="fb-divider"></div></li>
+
+      <li><div class="fb-nav-label">Analyse</div></li>
+
+      <li>
+        <a href="javascript:;" class="fb-nav-link" (click)="toggleStats($event)">
+          <div class="fb-nav-icon"><i class="material-icons-outlined">bar_chart</i></div>
+          <span class="fb-nav-text">Statistiques</span>
+          <span class="material-icons-outlined stats-arrow"
+                [style.transform]="statsOpen ? 'rotate(180deg)' : 'rotate(0deg)'">expand_more</span>
+        </a>
+        <ul class="fb-submenu" [class.open]="statsOpen">
+          <li><a routerLink="/statistiques/budget" routerLinkActive="active" class="fb-sub-link">Budget</a></li>
+          <li><a routerLink="/statistiques/revenus" routerLinkActive="active" class="fb-sub-link">Revenus</a></li>
+          <li><a routerLink="/statistiques/charges" routerLinkActive="active" class="fb-sub-link">Charges</a></li>
+          <li><a routerLink="/statistiques/factures" routerLinkActive="active" class="fb-sub-link">Factures</a></li>
+        </ul>
+      </li>
+
+      <li>
+        <a routerLink="/notifications" routerLinkActive="active" class="fb-nav-link">
+          <div class="fb-nav-icon"><i class="material-icons-outlined">notifications_active</i></div>
+          <span class="fb-nav-text">Notifications</span>
+        </a>
+      </li>
+
+      <li>
+        <a routerLink="/assistant" routerLinkActive="active" class="fb-nav-link">
+          <div class="fb-nav-icon"><i class="material-icons-outlined">smart_toy</i></div>
+          <span class="fb-nav-text">Assistant IA</span>
+        </a>
+      </li>
+
+      <li><div class="fb-divider"></div></li>
+
+      <li><div class="fb-nav-label">Compte</div></li>
+
+      <li>
+        <a href="javascript:;" (click)="logout($event)" class="fb-nav-link logout">
+          <div class="fb-nav-icon"><i class="material-icons-outlined">logout</i></div>
+          <span class="fb-nav-text">Déconnexion</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+</aside>
+<!-- end sidebar -->
+
+<!-- main wrapper -->
+<main class="main-wrapper">
+  <div class="main-content">
+    <router-outlet></router-outlet>
+  </div>
+</main>
+
+<!-- overlay -->
+<div class="overlay btn-toggle"></div>
+
+<!-- Profile modal (opened by the avatar dropdown's "Mon profil" item) -->
+<app-profile-modal [(open)]="profileOpen"></app-profile-modal>
+
+<!-- footer -->
+<!-- <footer class="page-footer"></footer> -->
+
+<!-- theme switcher -->
+<!-- <button class="btn btn-grd btn-grd-primary position-fixed bottom-0 end-0 m-3 d-flex align-items-center gap-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#staticBackdrop">
+  <i class="material-icons-outlined">tune</i>Customize
+</button> -->
+
+<div class="offcanvas offcanvas-end" data-bs-scroll="true" tabindex="-1" id="staticBackdrop">
+  <div class="offcanvas-header border-bottom h-70">
+    <div>
+      <h5 class="mb-0">Theme Customizer</h5>
+      <p class="mb-0">Customize your theme</p>
+    </div>
+    <a href="javascript:;" class="primaery-menu-close" data-bs-dismiss="offcanvas">
+      <i class="material-icons-outlined">close</i>
+    </a>
+  </div>
+  <div class="offcanvas-body">
+    <div>
+      <p>Theme variation</p>
+      <div class="row g-3">
+        <div class="col-12 col-xl-6">
+          <input type="radio" class="btn-check" name="theme-options" id="BlueTheme" checked>
+          <label class="btn btn-outline-secondary d-flex flex-column gap-1 align-items-center justify-content-center p-4" for="BlueTheme">
+            <span class="material-icons-outlined">contactless</span>
+            <span>Blue</span>
+          </label>
+        </div>
+        <div class="col-12 col-xl-6">
+          <input type="radio" class="btn-check" name="theme-options" id="LightTheme">
+          <label class="btn btn-outline-secondary d-flex flex-column gap-1 align-items-center justify-content-center p-4" for="LightTheme">
+            <span class="material-icons-outlined">light_mode</span>
+            <span>Light</span>
+          </label>
+        </div>
+        <div class="col-12 col-xl-6">
+          <input type="radio" class="btn-check" name="theme-options" id="DarkTheme">
+          <label class="btn btn-outline-secondary d-flex flex-column gap-1 align-items-center justify-content-center p-4" for="DarkTheme">
+            <span class="material-icons-outlined">dark_mode</span>
+            <span>Dark</span>
+          </label>
+        </div>
+        <div class="col-12 col-xl-6">
+          <input type="radio" class="btn-check" name="theme-options" id="SemiDarkTheme">
+          <label class="btn btn-outline-secondary d-flex flex-column gap-1 align-items-center justify-content-center p-4" for="SemiDarkTheme">
+            <span class="material-icons-outlined">contrast</span>
+            <span>Semi Dark</span>
+          </label>
+        </div>
+        <div class="col-12 col-xl-6">
+          <input type="radio" class="btn-check" name="theme-options" id="BoderedTheme">
+          <label class="btn btn-outline-secondary d-flex flex-column gap-1 align-items-center justify-content-center p-4" for="BoderedTheme">
+            <span class="material-icons-outlined">border_style</span>
+            <span>Bordered</span>
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

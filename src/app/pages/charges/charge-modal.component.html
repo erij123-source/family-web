@@ -1,0 +1,95 @@
+<div class="fb-ch-overlay" *ngIf="open" (click)="onBackdropClick($event)">
+  <div class="fb-ch-card" role="dialog" aria-modal="true">
+    <div class="fb-ch-accent"></div>
+
+    <div class="fb-ch-head">
+      <div class="fb-ch-head-icon"><i class="material-icons-outlined">{{ editing ? 'edit' : 'add_circle_outline' }}</i></div>
+      <div class="fb-ch-head-text">
+        <h5 class="fb-ch-title">{{ editing ? 'Modifier la charge' : 'Ajouter une charge' }}</h5>
+        <p class="fb-ch-sub">Remplissez les informations de la dépense</p>
+      </div>
+      <button type="button" class="fb-ch-close" (click)="close()" aria-label="Fermer">
+        <i class="material-icons-outlined">close</i>
+      </button>
+    </div>
+
+    <form (ngSubmit)="save()" #f="ngForm" novalidate class="fb-ch-form">
+
+      <!-- Membre concerné (full width) -->
+      <div class="fb-ch-field">
+        <label><i class="material-icons-outlined">person</i> Membre concerné <span class="req">*</span></label>
+        <select name="membreId" [(ngModel)]="form.membreId" required>
+          <option [ngValue]="null">— Sélectionner un membre —</option>
+          <option *ngFor="let m of membres" [ngValue]="m.id">
+            {{ m.user?.firstName }} {{ m.user?.lastName }}
+            <ng-container *ngIf="!m.user?.firstName && !m.user?.lastName">Membre #{{ m.id }}</ng-container>
+          </option>
+        </select>
+      </div>
+
+      <!-- Type / Catégorie -->
+      <div class="fb-ch-row two">
+        <div class="fb-ch-field">
+          <label><i class="material-icons-outlined">label</i> Type <span class="req">*</span></label>
+          <select name="type" [(ngModel)]="form.type" required>
+            <option value="FIXE">Charge fixe</option>
+            <option value="VARIABLE">Charge variable</option>
+          </select>
+        </div>
+        <div class="fb-ch-field">
+          <label><i class="material-icons-outlined">apps</i> Catégorie <span class="req">*</span></label>
+          <select name="categoryName" [(ngModel)]="form.categoryName" required>
+            <option value="">— Catégorie —</option>
+            <optgroup label="Charges fixes">
+              <option *ngFor="let p of presetsFixes" [value]="p.name">{{ p.name }}</option>
+            </optgroup>
+            <optgroup label="Charges variables">
+              <option *ngFor="let p of presetsVariables" [value]="p.name">{{ p.name }}</option>
+            </optgroup>
+          </select>
+        </div>
+      </div>
+
+      <!-- Nom personnalisé (visible uniquement quand "Autre" est sélectionné) -->
+      <div class="fb-ch-field" *ngIf="isAutreSelected">
+        <label><i class="material-icons-outlined">edit_note</i> Préciser la catégorie <span class="req">*</span></label>
+        <input type="text" name="customCategoryName"
+               [(ngModel)]="form.customCategoryName"
+               placeholder="Ex : Cadeaux, Abonnements, …" maxlength="40">
+      </div>
+
+      <!-- Montant -->
+      <div class="fb-ch-field">
+        <label><i class="material-icons-outlined">payments</i> Montant (DT) <span class="req">*</span></label>
+        <div class="fb-ch-suffix">
+          <input type="number" min="0" step="0.01" name="budget"
+                 [(ngModel)]="form.budget" placeholder="0" required>
+          <span>DT</span>
+        </div>
+      </div>
+
+      <!-- Date de la charge (la date de paiement est imposée automatiquement
+           = aujourd'hui par le système, non modifiable par l'utilisateur). -->
+      <div class="fb-ch-field">
+        <label><i class="material-icons-outlined">event</i> Date de la charge <span class="req">*</span></label>
+        <input type="date" name="chargeDate" [(ngModel)]="form.chargeDate" required>
+      </div>
+
+      <!-- Description -->
+      <div class="fb-ch-field">
+        <label><i class="material-icons-outlined">notes</i> Description</label>
+        <textarea name="description" rows="2" [(ngModel)]="form.description" placeholder="Détails supplémentaires…"></textarea>
+      </div>
+
+      <div *ngIf="errorMsg" class="fb-ch-alert">{{ errorMsg }}</div>
+
+      <div class="fb-ch-actions">
+        <button type="button" class="fb-ch-btn-cancel" (click)="close()">Annuler</button>
+        <button type="submit" class="fb-ch-btn-save" [disabled]="saving">
+          <i class="material-icons-outlined">{{ saving ? 'hourglass_top' : 'save' }}</i>
+          {{ saving ? 'Enregistrement…' : (editing ? 'Mettre à jour' : 'Ajouter') }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

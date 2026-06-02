@@ -1,0 +1,324 @@
+<style>
+    /* ══ NOTIFICATIONS — fintech-style ══ */
+    .notif-page-header {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      gap: 16px; flex-wrap: wrap; margin: -4px 0 20px;
+    }
+    .notif-page-header h3 {
+      font-size: 26px; font-weight: 800; margin: 0 0 4px; letter-spacing: -0.3px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .notif-page-header h3 .dot {
+      width: 22px; height: 22px; border-radius: 50%; background: #ef4444; color: #fff;
+      font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center;
+    }
+    .notif-page-header .subtitle { font-size: 13.5px; color: #000000; margin: 0; }
+    .notif-page-header .header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+    .btn-ghost {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 9px 16px; border-radius: 10px; border: 1px solid var(--bs-border-color);
+      background: transparent; color: var(--bs-body-color); font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: all .2s;
+    }
+    .btn-ghost:hover { border-color: #2E3F8F; color: #2E3F8F; background: rgba(55,124,244,0.05); }
+    .btn-ghost:disabled { opacity: 0.45; cursor: not-allowed; }
+    .btn-ghost .material-icons-outlined { font-size: 17px; }
+
+    /* Action buttons — variantes colorées dédiées (au lieu du gris ghost). */
+    .btn-action {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 9px 16px; border-radius: 10px; border: none;
+      font-size: 13px; font-weight: 700; color: #fff;
+      cursor: pointer; transition: transform .15s, box-shadow .2s, opacity .2s;
+    }
+    .btn-action .material-icons-outlined { font-size: 17px; }
+    .btn-action:hover { transform: translateY(-1px); box-shadow: 0 6px 14px rgba(0,0,0,0.18); }
+    .btn-action:disabled { opacity: 0.45; cursor: not-allowed; transform: none; box-shadow: none; }
+    .btn-action.clear-read  { background: linear-gradient(135deg,#dc2626,#ef4444); }
+    .btn-action.mark-all    { background: linear-gradient(135deg,#16a34a,#22c55e); }
+
+    /* ── KPI strip — mêmes cartes que Factures / Charges / Revenus ── */
+    .kpi-card {
+      background:var(--bs-body-bg); border:1px solid var(--bs-border-color);
+      border-radius:16px; padding:16px 18px; box-shadow:0 2px 10px rgba(0,0,0,0.04);
+      position:relative; overflow:hidden; transition:transform .2s, box-shadow .2s;
+    }
+    .kpi-card:hover { transform:translateY(-3px); box-shadow:0 8px 24px rgba(0,0,0,0.15); }
+    .kpi-card::after { content:''; position:absolute; top:0; left:0; right:0; height:3px; }
+    .kpi-card.kpi-blue::after   { background:linear-gradient(90deg,#377CF4,#2E3F8F); }
+    .kpi-card.kpi-orange::after { background:linear-gradient(90deg,#d97706,#f59e0b); }
+    .kpi-card.kpi-red::after    { background:linear-gradient(90deg,#dc2626,#ef4444); }
+    .kpi-card.kpi-green::after  { background:linear-gradient(90deg,#16a34a,#22c55e); }
+    .kpi-icon { width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; color:#fff; flex-shrink:0; }
+    .kpi-icon .material-icons-outlined { font-size:22px; }
+    .kpi-label { font-size:11.5px; font-weight:600; letter-spacing:0.3px; text-transform:uppercase; opacity:0.7; }
+    .kpi-value { font-size:20px; font-weight:800; letter-spacing:-0.3px; }
+    .kpi-progress { height:6px; background:rgba(148,163,184,0.15); border-radius:99px; overflow:hidden; }
+    .kpi-progress .fill { height:100%; border-radius:99px; transition:width 0.6s ease; }
+    .kpi-sub { font-size:11.5px; opacity:0.6; }
+
+    /* Gradient helpers (réutilisés depuis les autres pages) */
+    .bg-grd-primary{background:linear-gradient(135deg,#377CF4,#2E3F8F)!important;}
+    .bg-grd-warning{background:linear-gradient(135deg,#d97706,#f59e0b)!important;}
+    .bg-grd-danger{background:linear-gradient(135deg,#dc2626,#ef4444)!important;}
+    .bg-grd-success{background:linear-gradient(135deg,#16a34a,#22c55e)!important;}
+
+    /* ── Toolbar (filter pills + search) ── */
+    .notif-toolbar {
+      background: var(--bs-body-bg); border: 1px solid var(--bs-border-color);
+      border-radius: 14px; padding: 12px 16px; display: flex; align-items: center; gap: 10px;
+      flex-wrap: wrap; margin-bottom: 18px;
+    }
+    .notif-toolbar .search-wrap { position: relative; flex: 1; min-width: 200px; max-width: 360px; }
+    .notif-toolbar .search-wrap .material-icons-outlined {
+      position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+      font-size: 18px; opacity: 0.4; pointer-events: none;
+    }
+    .notif-search {
+      width: 100%; padding: 8px 14px 8px 38px; border-radius: 10px;
+      border: 1px solid var(--bs-border-color); background: var(--bs-body-bg);
+      font-size: 13.5px; outline: none; transition: border-color .2s, box-shadow .2s;
+      color: var(--bs-body-color);
+    }
+    .notif-search:focus { border-color: #2E3F8F; box-shadow: 0 0 0 3px rgba(55,124,244,0.13); }
+
+    .pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 7px 14px; border-radius: 20px; border: 1px solid var(--bs-border-color);
+      background: var(--bs-body-bg); color: var(--bs-body-color);
+      font-size: 12.5px; font-weight: 600; cursor: pointer; transition: all .2s; white-space: nowrap;
+    }
+    .pill:hover { border-color: #2E3F8F; color: #2E3F8F; }
+    .pill.active { background: rgba(55,124,244,0.12); border-color: #2E3F8F; color: #2E3F8F; }
+    .pill .pill-count {
+      font-size: 10.5px; font-weight: 700; padding: 1px 7px; border-radius: 20px;
+      background: rgba(148,163,184,0.18);
+    }
+    .pill.active .pill-count { background: rgba(55,124,244,0.18); color: #2E3F8F; }
+
+    /* Variantes colorées par catégorie de pill — couleur native même hors active. */
+    .pill.pill-all     { color: #1e40af; border-color: rgba(55,124,244,0.30); }
+    .pill.pill-all:hover, .pill.pill-all.active     { background: rgba(55,124,244,0.14);  border-color: #2E3F8F; color: #1e40af; }
+    .pill.pill-all.active .pill-count { background: rgba(55,124,244,0.20); color: #1e40af; }
+
+    .pill.pill-reminder { color: #b45309; border-color: rgba(245,158,11,0.30); }
+    .pill.pill-reminder:hover, .pill.pill-reminder.active { background: rgba(245,158,11,0.13); border-color: #f59e0b; color: #b45309; }
+    .pill.pill-reminder.active .pill-count { background: rgba(245,158,11,0.22); color: #b45309; }
+
+    .pill.pill-alert    { color: #b91c1c; border-color: rgba(239,68,68,0.30); }
+    .pill.pill-alert:hover, .pill.pill-alert.active    { background: rgba(239,68,68,0.13);  border-color: #ef4444; color: #b91c1c; }
+    .pill.pill-alert.active .pill-count    { background: rgba(239,68,68,0.20); color: #b91c1c; }
+
+    .pill.pill-unread   { color: #6d28d9; border-color: rgba(124,58,237,0.30); }
+    .pill.pill-unread:hover, .pill.pill-unread.active  { background: rgba(124,58,237,0.13); border-color: #7c3aed; color: #6d28d9; }
+    .pill.pill-unread.active .pill-count   { background: rgba(124,58,237,0.20); color: #6d28d9; }
+
+    /* ── Time-group section ── */
+    .group-section { margin-bottom: 24px; }
+    .group-label {
+      font-size: 11.5px; font-weight: 700; opacity: 0.55;
+      text-transform: uppercase; letter-spacing: 1px;
+      padding: 0 4px 10px; display: flex; align-items: center; gap: 6px;
+    }
+    .group-label::after {
+      content: ''; flex: 1; height: 1px; background: var(--bs-border-color); margin-left: 10px;
+    }
+
+    /* ── Notification card ── */
+    .ncard {
+      background: var(--bs-body-bg); border: 1px solid var(--bs-border-color);
+      border-radius: 14px; padding: 14px 16px;
+      display: flex; align-items: flex-start; gap: 14px;
+      margin-bottom: 8px; transition: all .2s; position: relative; overflow: hidden;
+    }
+    .ncard:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,0,0,0.07); }
+    .ncard.unread { border-left: 3px solid var(--accent, #2E3F8F); }
+    .ncard.unread .ncard-title { font-weight: 700; }
+    .ncard.unread::before {
+      content: ''; position: absolute; top: 18px; right: 14px;
+      width: 8px; height: 8px; border-radius: 50%; background: var(--accent, #2E3F8F);
+    }
+    .ncard.read { opacity: 0.78; }
+    .ncard .ncard-icon {
+      width: 42px; height: 42px; border-radius: 11px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .ncard .ncard-icon .material-icons-outlined { font-size: 22px; }
+    .ncard.sev-critical { --accent: #ef4444; }
+    .ncard.sev-critical .ncard-icon { background: rgba(239,68,68,0.12); color: #ef4444; }
+    .ncard.sev-warning { --accent: #f59e0b; }
+    .ncard.sev-warning .ncard-icon { background: rgba(245,158,11,0.12); color: #d97706; }
+    .ncard.sev-info { --accent: #2E3F8F; }
+    .ncard.sev-info .ncard-icon { background: rgba(55,124,244,0.12); color: #2E3F8F; }
+    .ncard.sev-suggestion { --accent: #22c55e; }
+    .ncard.sev-suggestion .ncard-icon { background: rgba(34,197,94,0.12); color: #16a34a; }
+
+    .ncard-body { flex: 1; min-width: 0; }
+    .ncard-top {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      gap: 10px; margin-bottom: 4px;
+    }
+    .ncard-title {
+      font-size: 14px; font-weight: 600; margin: 0; line-height: 1.35;
+      color: var(--bs-body-color); padding-right: 16px;
+    }
+    .ncard-time {
+      font-size: 11.5px; opacity: 0.55; white-space: nowrap; flex-shrink: 0;
+      display: inline-flex; align-items: center; gap: 4px;
+    }
+    .ncard-time .material-icons-outlined { font-size: 12px; }
+    .ncard-msg { font-size: 12.5px; opacity: 0.72; margin: 0 0 8px; line-height: 1.5; }
+    .ncard-footer { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+
+    .ncard-tag {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 700;
+    }
+    .ncard.sev-critical .ncard-tag { background: rgba(239,68,68,0.10); color: #dc2626; }
+    .ncard.sev-warning  .ncard-tag { background: rgba(245,158,11,0.10); color: #d97706; }
+    .ncard.sev-info     .ncard-tag { background: rgba(55,124,244,0.10); color: #377CF4; }
+    .ncard.sev-suggestion .ncard-tag { background: rgba(34,197,94,0.10); color: #16a34a; }
+
+    .ncard-actions { display: flex; gap: 6px; }
+    .ncard-btn {
+      width: 28px; height: 28px; border-radius: 8px; border: 1px solid var(--bs-border-color);
+      background: transparent; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+      color: var(--bs-body-color); opacity: 0.6; transition: all .2s;
+    }
+    .ncard-btn:hover { opacity: 1; border-color: #2E3F8F; color: #2E3F8F; background: rgba(55,124,244,0.08); }
+    .ncard-btn.danger:hover { border-color: #ef4444; color: #ef4444; background: rgba(239,68,68,0.08); }
+    .ncard-btn .material-icons-outlined { font-size: 15px; }
+
+    /* ── Empty state ── */
+    .notif-empty {
+      background: var(--bs-body-bg); border: 1px dashed var(--bs-border-color);
+      border-radius: 16px; padding: 60px 20px; text-align: center;
+    }
+    .notif-empty-icon {
+      width: 80px; height: 80px; border-radius: 22px;
+      background: linear-gradient(135deg,rgba(55,124,244,0.10),rgba(55,124,244,0.04));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 38px; color: #2E3F8F; margin: 0 auto 16px;
+    }
+    .notif-empty h5 { font-weight: 700; margin-bottom: 6px; }
+    .notif-empty p { color: var(--bs-secondary-color); margin: 0; font-size: 13.5px; }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .ncard { animation: fadeUp .25s ease both; }
+  </style>
+
+  <!-- ── PAGE HEADER ── -->
+  <div class="notif-page-header">
+    <div>
+      <h3>
+        <span class="material-icons-outlined" style="font-size:28px;color:#2E3F8F;">notifications_active</span>
+        Notifications
+        <span *ngIf="unreadCount > 0" class="dot">{{ unreadCount }}</span>
+      </h3>
+      <p class="subtitle">Gérez et suivez toutes les notifications de la famille</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn-action clear-read" (click)="clearRead()" [disabled]="total === unreadCount">
+        <span class="material-icons-outlined">cleaning_services</span> Effacer lues
+      </button>
+      <button class="btn-action mark-all" (click)="markAllRead()" [disabled]="unreadCount === 0">
+        <span class="material-icons-outlined">done_all</span> Tout marquer lu
+      </button>
+    </div>
+  </div>
+
+  <!-- ── TOOLBAR (filter + search) ── -->
+  <div class="notif-toolbar">
+    <button class="pill pill-all" [class.active]="filter === 'all'" (click)="setFilter('all')">
+      <span class="material-icons-outlined" style="font-size:14px">apps</span>
+      Toutes <span class="pill-count">{{ countAll }}</span>
+    </button>
+    <button class="pill pill-reminder" [class.active]="filter === 'REMINDER'" (click)="setFilter('REMINDER')">
+      <span class="material-icons-outlined" style="font-size:14px">schedule</span>
+      Rappels <span class="pill-count">{{ countReminders }}</span>
+    </button>
+    <button class="pill pill-alert" [class.active]="filter === 'ALERT'" (click)="setFilter('ALERT')">
+      <span class="material-icons-outlined" style="font-size:14px">warning</span>
+      Alertes <span class="pill-count">{{ countAlerts }}</span>
+    </button>
+    <button class="pill pill-unread" [class.active]="filter === 'UNREAD'" (click)="setFilter('UNREAD')">
+      <span class="material-icons-outlined" style="font-size:14px">mark_email_unread</span>
+      Non lues <span class="pill-count">{{ unreadCount }}</span>
+    </button>
+    <div class="search-wrap ms-auto">
+      <span class="material-icons-outlined">search</span>
+      <input type="text" class="notif-search" placeholder="Rechercher…"
+             [(ngModel)]="search" name="notifSearch">
+    </div>
+  </div>
+
+  <!-- ── Loading / error ── -->
+  <div *ngIf="loading" class="notif-empty" style="padding:30px 20px;">
+    <span class="material-icons-outlined" style="font-size:28px;color:#2E3F8F;">hourglass_top</span>
+    <p class="mt-2 mb-0" style="opacity:0.7;">Chargement…</p>
+  </div>
+  <div *ngIf="errorMsg && !loading" class="notif-empty" style="padding:30px 20px;color:#ef4444;">
+    <span class="material-icons-outlined" style="font-size:28px;color:#ef4444;">error_outline</span>
+    <p class="mt-2 mb-2" style="opacity:0.85;">{{ errorMsg }}</p>
+    <button class="btn-ghost" (click)="reload()">
+      <span class="material-icons-outlined">refresh</span> Réessayer
+    </button>
+  </div>
+
+  <!-- ── TIMELINE ── -->
+  <ng-container *ngIf="!loading && !errorMsg && !isEmpty; else emptyOrSkip">
+    <ng-container *ngTemplateOutlet="groupTpl; context:{ label:'Aujourd\'hui', items: todayGroup }"></ng-container>
+    <ng-container *ngTemplateOutlet="groupTpl; context:{ label:'Hier', items: yesterdayGroup }"></ng-container>
+    <ng-container *ngTemplateOutlet="groupTpl; context:{ label:'Plus ancien', items: olderGroup }"></ng-container>
+  </ng-container>
+
+  <ng-template #groupTpl let-label="label" let-items="items">
+    <section class="group-section" *ngIf="items.length > 0">
+      <div class="group-label">{{ label }}</div>
+      <div class="ncard"
+           *ngFor="let n of items"
+           [ngClass]="['sev-' + n.severityLower, n.readFlag ? 'read' : 'unread']">
+        <div class="ncard-icon"><span class="material-icons-outlined">{{ n.icon }}</span></div>
+        <div class="ncard-body">
+          <div class="ncard-top">
+            <p class="ncard-title">{{ n.title }}</p>
+            <span class="ncard-time">
+              <span class="material-icons-outlined">schedule</span> {{ n.time }}
+            </span>
+          </div>
+          <p class="ncard-msg">{{ n.message }}</p>
+          <div class="ncard-footer">
+            <span class="ncard-tag">{{ kindLabel(n.kind) }}</span>
+            <div class="ncard-actions">
+              <button class="ncard-btn" (click)="toggleRead(n)"
+                      [title]="n.readFlag ? 'Marquer non lu' : 'Marquer lu'">
+                <span class="material-icons-outlined">{{ n.readFlag ? 'mark_email_unread' : 'done' }}</span>
+              </button>
+              <button class="ncard-btn danger" (click)="remove(n)" title="Supprimer">
+                <span class="material-icons-outlined">close</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </ng-template>
+
+  <ng-template #emptyOrSkip>
+    <ng-container *ngIf="!loading && !errorMsg">
+      <ng-container *ngTemplateOutlet="emptyTpl"></ng-container>
+    </ng-container>
+  </ng-template>
+
+  <!-- ── EMPTY STATE ── -->
+  <ng-template #emptyTpl>
+    <div class="notif-empty">
+      <div class="notif-empty-icon"><span class="material-icons-outlined">notifications_off</span></div>
+      <h5>Aucune notification</h5>
+      <p *ngIf="search; else noNotif">Aucun résultat pour "{{ search }}".</p>
+      <ng-template #noNotif>
+        <p>Vous êtes à jour. Revenez plus tard pour voir les nouveautés.</p>
+      </ng-template>
+    </div>
+  </ng-template>
