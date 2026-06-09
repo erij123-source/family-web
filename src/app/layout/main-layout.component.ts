@@ -2,6 +2,7 @@ import {
   AfterViewInit,
   Component,
   OnDestroy,
+  OnInit,
   ViewEncapsulation,
   inject,
 } from '@angular/core';
@@ -24,12 +25,19 @@ declare const PerfectScrollbar: any;
   encapsulation: ViewEncapsulation.None,
   templateUrl: './main-layout.component.html',
 })
-export class MainLayoutComponent implements AfterViewInit, OnDestroy {
+export class MainLayoutComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   private readonly session = inject(SessionService);
 
   profileOpen = false;
+
+  ngOnInit(): void {
+    // À l'entrée dans le shell authentifié (login ou simple refresh), on
+    // resynchronise l'avatar du header depuis le serveur pour refléter une
+    // photo changée ailleurs (mobile, page Famille).
+    this.auth.syncAvatarFromServer();
+  }
 
   /** Stats submenu state — driven by Angular bindings instead of an
    *  imperative DOM toggle so navigations and re-renders never lose it.

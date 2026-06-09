@@ -44,6 +44,17 @@ export class StatistiquesFacturesComponent implements AfterViewInit {
   private categoriesChart: any = null;
   private membersChart: any = null;
 
+  // Distinct palette — one clearly different hue per slice, so 8+ categories
+  // stay visually separable.
+  private readonly sliceColors = [
+    '#2E3F8F', '#f97316', '#22c55e', '#06b6d4', '#8b5cf6',
+    '#ec4899', '#0ea5e9', '#ef4444', '#14b8a6', '#facc15',
+  ];
+  private readonly sliceGradient = [
+    '#1d4ed8', '#ea580c', '#16a34a', '#0891b2', '#7c3aed',
+    '#db2777', '#0284c7', '#b91c1c', '#0f766e', '#ca8a04',
+  ];
+
   ngAfterViewInit(): void {
     this.renderEmptyCharts();
     this.fetchAll();
@@ -120,8 +131,10 @@ export class StatistiquesFacturesComponent implements AfterViewInit {
     this.loading = true;
     forkJoin({
       monthly:    this.stats.facturesMonthly(12, false, this.toAnchor('line')),
-      byCategory: this.stats.facturesByCategory(12, this.toAnchor('cat')),
-      byMember:   this.stats.facturesByMember(12, this.toAnchor('mem')),
+      // Pies show the breakdown for the SELECTED month only (period 1), so
+      // picking Juin shows Juin's factures — not a 12-month rolling window.
+      byCategory: this.stats.facturesByCategory(1, this.toAnchor('cat')),
+      byMember:   this.stats.facturesByMember(1, this.toAnchor('mem')),
     }).subscribe({
       next: ({ monthly, byCategory, byMember }) => {
         this.updateAreaChart(monthly);
@@ -144,12 +157,12 @@ export class StatistiquesFacturesComponent implements AfterViewInit {
         error: (e) => console.error('[stats-factures] line refresh failed', e),
       });
     } else if (scope === 'cat') {
-      this.stats.facturesByCategory(12, anchor).subscribe({
+      this.stats.facturesByCategory(1, anchor).subscribe({
         next: (r) => this.updateCategoriesDonut(r),
         error: (e) => console.error('[stats-factures] cat refresh failed', e),
       });
     } else if (scope === 'mem') {
-      this.stats.facturesByMember(12, anchor).subscribe({
+      this.stats.facturesByMember(1, anchor).subscribe({
         next: (r) => this.updateMembersPie(r),
         error: (e) => console.error('[stats-factures] mem refresh failed', e),
       });
@@ -229,6 +242,7 @@ export class StatistiquesFacturesComponent implements AfterViewInit {
       labels: [] as string[],
       chart: { type: 'pie', height: 360, foreColor: '#9ba7b2', toolbar: { show: false } },
       colors: ['#a855f7', '#f59e0b', '#2E3F8F', '#22c55e', '#ef4444'],
+      dataLabels: { enabled: true, formatter: (v: number) => Math.round(v) + '%' },
       fill: {
         type: 'gradient',
         gradient: { shade: 'dark',
@@ -263,8 +277,8 @@ export class StatistiquesFacturesComponent implements AfterViewInit {
       } catch (e) { console.warn('[stats-factures] area empty refresh failed', e); }
       return;
     }
-    let running = 0;
-    const data = rows.map((r) => (running += (r.total || 0)));
+    // Valeur propre de chaque mois (pas de cumul) : juin = factures de juin.
+    const data = rows.map((r) => r.total || 0);
     const yMax = this.niceCeil(Math.max(0, ...data));
     try {
       this.areaChart.updateOptions({
@@ -284,59 +298,71 @@ export class StatistiquesFacturesComponent implements AfterViewInit {
   private updateCategoriesDonut(rows: PieSlice[]): void {
     if (!this.categoriesChart) return;
     const isFuture = this.isFutureAnchor('cat');
-    const total = isFuture ? 0 : rows.reduce((s, r) => s + (r.value || 0), 0);
+    // One slice per category name in the month's list, largest-first, no grouping.
+    const slices = isFuture
+      ? []
+      : [...rows].filter((r) => (r.value || 0) > 0).sort((a, b) => (b.value || 0) - (a.value || 0));
+    const total = slices.reduce((s, r) => s + (r.value || 0), 0);
     if (total <= 0) {
-      try { this.categoriesChart.updateOptions(emptyPieOptions(true)); }
-      catch (e) { console.warn('[stats-factures] categories empty refresh failed', e); }
+      try {
+        this.categoriesChart.updateOptions(emptyPieOptions(true));
+        this.categoriesChart.updateSeries([1], true);
+      } catch (e) { console.warn('[stats-factures] categories empty refresh failed', e); }
       return;
     }
     try {
+      // Labels + styling via updateOptions, then values via updateSeries so the
+      // slices redraw even on count change — including the empty→data first
+      // load that previously left newly-added factures invisible.
       this.categoriesChart.updateOptions({
-        labels: rows.map((r) => r.label),
-        series: rows.map((r) => r.value),
-        colors: ['#2E3F8F','#f97316','#22c55e','#06b6d4','#8b5cf6','#ec4899','#64748b','#0ea5e9'],
+        labels: slices.map((r) => r.label),
+        colors: this.sliceColors,
         fill: {
           type: 'gradient', opacity: 1,
-          gradient: { shade: 'dark',
-            gradientToColors: ['#ee0979','#17ad37','#ec6ead','#00c6fb','#ffd200','#7928ca','#ff6a00','#2af598'],
+          gradient: { shade: 'dark', gradientToColors: this.sliceGradient,
             shadeIntensity: 1, type: 'vertical', opacityFrom: 1, opacityTo: 1 },
         },
         dataLabels: { enabled: true, formatter: (v: number) => Math.round(v) + '%' },
-        legend: { position: 'bottom', show: true, fontSize: '12px' },
+        legend: { position: 'bottom', show: true, fontSize: '12px', onItemClick: { toggleDataSeries: false } },
         tooltip: { enabled: true, theme: 'dark', y: { formatter: (v: number) => v.toLocaleString('fr') + ' DT' } },
         stroke: { show: true, width: 2, colors: ['#ffffff'] },
         plotOptions: { pie: { donut: { size: '65%',
           labels: { show: true, total: { show: true, label: 'Total',
             formatter: () => total.toLocaleString('fr') + ' DT' } } } } },
       });
+      this.categoriesChart.updateSeries(slices.map((r) => r.value), true);
     } catch (e) { console.warn('[stats-factures] categories refresh failed', e); }
   }
 
   private updateMembersPie(rows: PieSlice[]): void {
     if (!this.membersChart) return;
     const isFuture = this.isFutureAnchor('mem');
-    const total = isFuture ? 0 : rows.reduce((s, r) => s + (r.value || 0), 0);
+    const slices = isFuture
+      ? []
+      : [...rows].filter((r) => (r.value || 0) > 0).sort((a, b) => (b.value || 0) - (a.value || 0));
+    const total = slices.reduce((s, r) => s + (r.value || 0), 0);
     if (total <= 0) {
-      try { this.membersChart.updateOptions(emptyPieOptions(false)); }
-      catch (e) { console.warn('[stats-factures] members empty refresh failed', e); }
+      try {
+        this.membersChart.updateOptions(emptyPieOptions(false));
+        this.membersChart.updateSeries([1], true);
+      } catch (e) { console.warn('[stats-factures] members empty refresh failed', e); }
       return;
     }
     try {
       this.membersChart.updateOptions({
-        labels: rows.map((r) => r.label),
-        series: rows.map((r) => r.value),
-        colors: ['#a855f7', '#f59e0b', '#2E3F8F', '#22c55e', '#ef4444'],
+        labels: slices.map((r) => r.label),
+        colors: this.sliceColors,
         fill: {
           type: 'gradient', opacity: 1,
-          gradient: { shade: 'dark',
-            gradientToColors: ['#7c3aed','#d97706','#377CF4','#16a34a','#dc2626'],
+          gradient: { shade: 'dark', gradientToColors: this.sliceGradient,
             shadeIntensity: 1, type: 'vertical', opacityFrom: 1, opacityTo: 1 },
         },
-        dataLabels: { enabled: true },
-        legend: { position: 'bottom', show: true, fontSize: '12px' },
+        dataLabels: { enabled: true, formatter: (v: number) => Math.round(v) + '%' },
+        legend: { position: 'bottom', show: true, fontSize: '12px', onItemClick: { toggleDataSeries: false } },
         tooltip: { enabled: true, theme: 'dark', y: { formatter: (v: number) => v.toLocaleString('fr') + ' DT' } },
         stroke: { show: true, width: 2, colors: ['#ffffff'] },
       });
+      this.membersChart.updateSeries(slices.map((r) => r.value), true);
     } catch (e) { console.warn('[stats-factures] members refresh failed', e); }
   }
 

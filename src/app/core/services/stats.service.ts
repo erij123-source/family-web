@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, catchError, of } from 'rxjs';
+import { Observable, catchError, map, of } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
 import { SessionService } from './session.service';
@@ -77,6 +77,32 @@ export class StatsService {
         console.error('[StatsService] budget/by-member failed', err);
         return of([] as PieSlice[]);
       }));
+  }
+
+  /** True per-month budget allocated to each member, read from the family
+   *  budget history (one row per member that actually had a budget that
+   *  month). Unlike budgetByMember(), which only reflects the latest budget
+   *  stamp, this returns what was really distributed for the requested month —
+   *  so past months keep their own figures instead of the current budget.
+   *  Empty array when no budget was distributed that month. */
+  budgetHistoryByMember(anchor: MonthAnchor): Observable<PieSlice[]> {
+    const familleId = this.session.snapshot?.familleId;
+    if (!familleId || !anchor?.year || !anchor?.month) return of([] as PieSlice[]);
+    const params = new HttpParams()
+      .set('month', String(anchor.month))
+      .set('year', String(anchor.year));
+    return this.http
+      .get<Array<{ membreId: number; nomComplet: string; budget: number; carryover: number }>>(
+        `${this.baseUrl}/membres/famille/${familleId}/budget-historique`,
+        { params },
+      )
+      .pipe(
+        map((rows) => (rows || []).map((r) => ({ label: r.nomComplet, value: r.budget || 0 }))),
+        catchError((err) => {
+          console.error('[StatsService] budget-historique failed', err);
+          return of([] as PieSlice[]);
+        }),
+      );
   }
 
   /** Spending per member (charges + factures) for the anchor month — or

@@ -124,13 +124,13 @@ export class StatistiquesBudgetComponent implements AfterViewInit {
     const barsAnchor = this.toAnchor('bars');
     const shareAnchor = this.toAnchor('share');
     forkJoin({
-      budgetMbr: this.stats.budgetByMember(),            // global — bars chart
-      spendMbr:  this.stats.spendingByMember(barsAnchor),
-      shareMbr:  this.stats.budgetByMember(shareAnchor),  // anchored — donut
+      budgetBars:  this.stats.budgetHistoryByMember(barsAnchor),  // real budget for bars month
+      spendBars:   this.stats.spendingByMember(barsAnchor),
+      budgetShare: this.stats.budgetHistoryByMember(shareAnchor), // real budget for donut month
     }).subscribe({
-      next: ({ budgetMbr, spendMbr, shareMbr }) => {
-        this.updateBudgetVsSpentChart(budgetMbr, spendMbr);
-        this.updateBudgetShareChart(shareMbr);
+      next: ({ budgetBars, spendBars, budgetShare }) => {
+        this.updateBudgetVsSpentChart(budgetBars, spendBars);
+        this.updateBudgetShareChart(budgetShare);
         this.loading = false;
       },
       error: (err) => {
@@ -156,16 +156,16 @@ export class StatistiquesBudgetComponent implements AfterViewInit {
     } else if (scope === 'bars') {
       const a = this.toAnchor('bars');
       forkJoin({
-        budgetMbr: this.stats.budgetByMember(),
-        spendMbr:  this.stats.spendingByMember(a),
+        budget: this.stats.budgetHistoryByMember(a),
+        spend:  this.stats.spendingByMember(a),
       }).subscribe({
-        next: ({ budgetMbr, spendMbr }) => this.updateBudgetVsSpentChart(budgetMbr, spendMbr),
+        next: ({ budget, spend }) => this.updateBudgetVsSpentChart(budget, spend),
         error: (e) => console.error('[stats-budget] bars refresh failed', e),
       });
     } else if (scope === 'share') {
       const a = this.toAnchor('share');
-      this.stats.budgetByMember(a).subscribe({
-        next: (shareMbr) => this.updateBudgetShareChart(shareMbr),
+      this.stats.budgetHistoryByMember(a).subscribe({
+        next: (budget) => this.updateBudgetShareChart(budget),
         error: (e) => console.error('[stats-budget] share refresh failed', e),
       });
     }
@@ -303,16 +303,20 @@ export class StatistiquesBudgetComponent implements AfterViewInit {
 
   private updateBudgetVsSpentChart(budget: PieSlice[], spent: PieSlice[]): void {
     if (!this.budgetVsSpentChart) return;
-    const spentByName = new Map(spent.map((s) => [s.label, s.value]));
-    const labels = budget.map((b) => b.label);
-    const budgetData = budget.map((b) => b.value);
-    const spentData = budget.map((b) => spentByName.get(b.label) || 0);
+    const budgetByName = new Map(budget.map((b) => [b.label, b.value]));
+    const spentByName  = new Map(spent.map((s) => [s.label, s.value]));
+    // Union of members: spending lists the whole family, budget history only
+    // the members funded that month — keep both so nobody is dropped.
+    const labels = Array.from(new Set([...spent.map((s) => s.label), ...budget.map((b) => b.label)]));
+    const budgetData = labels.map((l) => budgetByName.get(l) || 0);
+    const spentData  = labels.map((l) => spentByName.get(l) || 0);
     const isFuture = this.isFutureAnchor('bars');
+    // The picked month has history when a budget was distributed for it OR
+    // money was spent that month. Otherwise (and for future months) — empty.
     const hasBudget = !isFuture && budgetData.some((v) => (v || 0) > 0);
     const hasSpent  = !isFuture && spentData.some((v) => (v || 0) > 0);
     if (!hasBudget && !hasSpent) {
-      // No allocations AND no spending for the picked month — keep
-      // member labels on the axis but draw no bars at all.
+      // Nothing for the picked month — keep member labels, draw no bars.
       try {
         this.budgetVsSpentChart.updateOptions({
           series: [
@@ -367,9 +371,12 @@ export class StatistiquesBudgetComponent implements AfterViewInit {
 
   private updateBudgetShareChart(budget: PieSlice[]): void {
     if (!this.budgetShareChart) return;
-    const total = budget.reduce((s, b) => s + (b.value || 0), 0);
+    const isFuture = this.isFutureAnchor('share');
+    // The donut shows how the month's budget was split. With no budget
+    // distributed that month (or a future month), there's nothing to split.
+    const total = isFuture ? 0 : budget.reduce((s, b) => s + (b.value || 0), 0);
     if (total <= 0) {
-      // No allocations set yet — show an empty donut ring with no values.
+      // No budget for the picked month — empty ring with no values.
       try { this.budgetShareChart.updateOptions(emptyPieOptions(true)); }
       catch (e) { console.warn('[stats-budget] share empty refresh failed', e); }
       return;

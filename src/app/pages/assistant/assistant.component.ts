@@ -1,719 +1,258 @@
-// @ts-nocheck
-// Auto-generated from the original static HTML page. Inline scripts are ported
-// verbatim into ngAfterViewInit, so type-checking is relaxed for this file.
-import { Component, ViewEncapsulation, AfterViewInit } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  NgZone,
+  ViewChild,
+  ViewEncapsulation,
+  effect,
+  inject,
+  signal,
+} from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 
-declare const $: any;
-declare const ApexCharts: any;
-declare const SimpleBar: any;
-declare const PerfectScrollbar: any;
-declare const bootstrap: any;
+import { ChatService } from '../../core/services/chat.service';
+import { SessionService } from '../../core/services/session.service';
+
+interface ChatMessage {
+  sender: 'user' | 'bot';
+  text: string;
+  time: string;
+}
 
 @Component({
   selector: 'app-assistant',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive],
+  imports: [FormsModule, RouterLink, RouterLinkActive],
   encapsulation: ViewEncapsulation.None,
   templateUrl: './assistant.component.html',
 })
-export class AssistantComponent implements AfterViewInit {
-  ngAfterViewInit(): void {
-    try {
-/* ─── inline script 1 ─── */
-/* ─── inlined from assets/plugins/input-tags/js/tagsinput.js ─── */
-/*
- * bootstrap-tagsinput v0.8.0
- * 
- */
+export class AssistantComponent {
+  private readonly chat = inject(ChatService);
+  private readonly zone = inject(NgZone);
+  private readonly session = inject(SessionService);
 
-(function ($) {
-  "use strict";
+  @ViewChild('msgsContainer') private msgsContainer?: ElementRef<HTMLElement>;
 
-  var defaultOptions = {
-    tagClass: function(item) {
-      return 'badge bg-primary';
-    },
-    focusClass: 'focus',
-    itemValue: function(item) {
-      return item ? item.toString() : item;
-    },
-    itemText: function(item) {
-      return this.itemValue(item);
-    },
-    itemTitle: function(item) {
-      return null;
-    },
-    freeInput: true,
-    addOnBlur: true,
-    maxTags: undefined,
-    maxChars: undefined,
-    confirmKeys: [13, 44],
-    delimiter: ',',
-    delimiterRegex: null,
-    cancelConfirmKeysOnEmpty: false,
-    onTagExists: function(item, $tag) {
-      $tag.hide().fadeIn();
-    },
-    trimValue: false,
-    allowDuplicates: false,
-    triggerChange: true,
-    editOnBackspace: false
-  };
+  private static readonly STORAGE_KEY = 'fb_assistant_chat';
 
-  /**
-   * Constructor function
-   */
-  function TagsInput(element, options) {
-    this.isInit = true;
-    this.itemsArray = [];
+  readonly messages = signal<ChatMessage[]>(this.loadMessages());
+  readonly typing = signal(false);
+  readonly recording = signal(false);
+  draft = '';
 
-    this.$element = $(element);
-    this.$element.addClass('visually-hidden');
+  private recognition: any;
 
-    this.isSelect = (element.tagName === 'SELECT');
-    this.multiple = (this.isSelect && element.hasAttribute('multiple'));
-    this.objectItems = options && options.itemValue;
-    this.placeholderText = element.hasAttribute('placeholder') ? this.$element.attr('placeholder') : '';
-    this.inputSize = Math.max(1, this.placeholderText.length);
+  // Persiste la conversation pour qu'elle survive aux changements de page / rechargements.
+  private readonly persist = effect(() => this.saveMessages(this.messages()));
 
-    this.$container = $('<div class="bootstrap-tagsinput"></div>');
-    this.$input = $('<input type="text" placeholder="' + this.placeholderText + '"/>').appendTo(this.$container);
+  // ─── Sending ──────────────────────────────────────────────────────────
+  send(): void {
+    const text = this.draft.trim();
+    if (!text || this.typing()) {
+      return;
+    }
 
-    this.$element.before(this.$container);
+    // Prior turns (before adding the new message) so the assistant has memory.
+    const history = this.messages().map((m) => ({
+      role: (m.sender === 'user' ? 'user' : 'bot') as 'user' | 'bot',
+      text: m.text,
+    }));
 
-    this.build(options);
-    this.isInit = false;
+    this.push({ sender: 'user', text, time: this.now() });
+    this.draft = '';
+    this.typing.set(true);
+    this.scrollToBottom();
+
+    const snap = this.session.snapshot;
+    this.chat.ask(text, history, snap?.familleId, snap?.membreId, snap?.username).subscribe({
+      next: (res) => {
+        this.typing.set(false);
+        this.push({ sender: 'bot', text: res.reply, time: this.now() });
+        this.scrollToBottom();
+      },
+      error: () => {
+        this.typing.set(false);
+        this.push({
+          sender: 'bot',
+          text: "Désolé, une erreur est survenue. Réessayez dans un instant.",
+          time: this.now(),
+        });
+        this.scrollToBottom();
+      },
+    });
   }
 
-  TagsInput.prototype = {
-    constructor: TagsInput,
-
-    /**
-     * Adds the given item as a new tag. Pass true to dontPushVal to prevent
-     * updating the elements val()
-     */
-    add: function(item, dontPushVal, options) {
-      var self = this;
-
-      if (self.options.maxTags && self.itemsArray.length >= self.options.maxTags)
-        return;
-
-      // Ignore falsey values, except false
-      if (item !== false && !item)
-        return;
-
-      // Trim value
-      if (typeof item === "string" && self.options.trimValue) {
-        item = $.trim(item);
-      }
-
-      // Throw an error when trying to add an object while the itemValue option was not set
-      if (typeof item === "object" && !self.objectItems)
-        throw("Can't add objects when itemValue option is not set");
-
-      // Ignore strings only containg whitespace
-      if (item.toString().match(/^\s*$/))
-        return;
-
-      // If SELECT but not multiple, remove current tag
-      if (self.isSelect && !self.multiple && self.itemsArray.length > 0)
-        self.remove(self.itemsArray[0]);
-
-      if (typeof item === "string" && this.$element[0].tagName === 'INPUT') {
-        var delimiter = (self.options.delimiterRegex) ? self.options.delimiterRegex : self.options.delimiter;
-        var items = item.split(delimiter);
-        if (items.length > 1) {
-          for (var i = 0; i < items.length; i++) {
-            this.add(items[i], true);
-          }
-
-          if (!dontPushVal)
-            self.pushVal(self.options.triggerChange);
-          return;
-        }
-      }
-
-      var itemValue = self.options.itemValue(item),
-          itemText = self.options.itemText(item),
-          tagClass = self.options.tagClass(item),
-          itemTitle = self.options.itemTitle(item);
-
-      // Ignore items allready added
-      var existing = $.grep(self.itemsArray, function(item) { return self.options.itemValue(item) === itemValue; } )[0];
-      if (existing && !self.options.allowDuplicates) {
-        // Invoke onTagExists
-        if (self.options.onTagExists) {
-          var $existingTag = $(".badge", self.$container).filter(function() { return $(this).data("item") === existing; });
-          self.options.onTagExists(item, $existingTag);
-        }
-        return;
-      }
-
-      // if length greater than limit
-      if (self.items().toString().length + item.length + 1 > self.options.maxInputLength)
-        return;
-
-      // raise beforeItemAdd arg
-      var beforeItemAddEvent = $.Event('beforeItemAdd', { item: item, cancel: false, options: options});
-      self.$element.trigger(beforeItemAddEvent);
-      if (beforeItemAddEvent.cancel)
-        return;
-
-      // register item in internal array and map
-      self.itemsArray.push(item);
-
-      // add a tag element
-
-      var $tag = $('<span class="' + htmlEncode(tagClass) + (itemTitle !== null ? ('" title="' + itemTitle) : '') + '">' + htmlEncode(itemText) + '<span data-role="remove"></span></span>');
-      $tag.data('item', item);
-      self.findInputWrapper().before($tag);
-
-      // Check to see if the tag exists in its raw or uri-encoded form
-      var optionExists = (
-        $('option[value="' + encodeURIComponent(itemValue).replace(/"/g, '\\"') + '"]', self.$element).length ||
-        $('option[value="' + htmlEncode(itemValue).replace(/"/g, '\\"') + '"]', self.$element).length
-      );
-
-      // add <option /> if item represents a value not present in one of the <select />'s options
-      if (self.isSelect && !optionExists) {
-        var $option = $('<option selected>' + htmlEncode(itemText) + '</option>');
-        $option.data('item', item);
-        $option.attr('value', itemValue);
-        self.$element.append($option);
-      }
-
-      if (!dontPushVal)
-        self.pushVal(self.options.triggerChange);
-
-      // Add class when reached maxTags
-      if (self.options.maxTags === self.itemsArray.length || self.items().toString().length === self.options.maxInputLength)
-        self.$container.addClass('bootstrap-tagsinput-max');
-
-      // If using typeahead, once the tag has been added, clear the typeahead value so it does not stick around in the input.
-      if ($('.typeahead, .twitter-typeahead', self.$container).length) {
-        self.$input.typeahead('val', '');
-      }
-
-      if (this.isInit) {
-        self.$element.trigger($.Event('itemAddedOnInit', { item: item, options: options }));
-      } else {
-        self.$element.trigger($.Event('itemAdded', { item: item, options: options }));
-      }
-    },
-
-    /**
-     * Removes the given item. Pass true to dontPushVal to prevent updating the
-     * elements val()
-     */
-    remove: function(item, dontPushVal, options) {
-      var self = this;
-
-      if (self.objectItems) {
-        if (typeof item === "object")
-          item = $.grep(self.itemsArray, function(other) { return self.options.itemValue(other) ==  self.options.itemValue(item); } );
-        else
-          item = $.grep(self.itemsArray, function(other) { return self.options.itemValue(other) ==  item; } );
-
-        item = item[item.length-1];
-      }
-
-      if (item) {
-        var beforeItemRemoveEvent = $.Event('beforeItemRemove', { item: item, cancel: false, options: options });
-        self.$element.trigger(beforeItemRemoveEvent);
-        if (beforeItemRemoveEvent.cancel)
-          return;
-
-        $('.badge', self.$container).filter(function() { return $(this).data('item') === item; }).remove();
-        $('option', self.$element).filter(function() { return $(this).data('item') === item; }).remove();
-        if($.inArray(item, self.itemsArray) !== -1)
-          self.itemsArray.splice($.inArray(item, self.itemsArray), 1);
-      }
-
-      if (!dontPushVal)
-        self.pushVal(self.options.triggerChange);
-
-      // Remove class when reached maxTags
-      if (self.options.maxTags > self.itemsArray.length)
-        self.$container.removeClass('bootstrap-tagsinput-max');
-
-      self.$element.trigger($.Event('itemRemoved',  { item: item, options: options }));
-    },
-
-    /**
-     * Removes all items
-     */
-    removeAll: function() {
-      var self = this;
-
-      $('.badge', self.$container).remove();
-      $('option', self.$element).remove();
-
-      while(self.itemsArray.length > 0)
-        self.itemsArray.pop();
-
-      self.pushVal(self.options.triggerChange);
-    },
-
-    /**
-     * Refreshes the tags so they match the text/value of their corresponding
-     * item.
-     */
-    refresh: function() {
-      var self = this;
-      $('.badge', self.$container).each(function() {
-        var $tag = $(this),
-            item = $tag.data('item'),
-            itemValue = self.options.itemValue(item),
-            itemText = self.options.itemText(item),
-            tagClass = self.options.tagClass(item);
-
-          // Update tag's class and inner text
-          $tag.attr('class', null);
-          $tag.addClass('badge ' + htmlEncode(tagClass));
-          $tag.contents().filter(function() {
-            return this.nodeType == 3;
-          })[0].nodeValue = htmlEncode(itemText);
-
-          if (self.isSelect) {
-            var option = $('option', self.$element).filter(function() { return $(this).data('item') === item; });
-            option.attr('value', itemValue);
-          }
-      });
-    },
-
-    /**
-     * Returns the items added as tags
-     */
-    items: function() {
-      return this.itemsArray;
-    },
-
-    /**
-     * Assembly value by retrieving the value of each item, and set it on the
-     * element.
-     */
-    pushVal: function() {
-      var self = this,
-          val = $.map(self.items(), function(item) {
-            return self.options.itemValue(item).toString();
-          });
-
-      self.$element.val( val.join(self.options.delimiter) );
-
-      if (self.options.triggerChange)
-        self.$element.trigger('change');
-    },
-
-    /**
-     * Initializes the tags input behaviour on the element
-     */
-    build: function(options) {
-      var self = this;
-
-      self.options = $.extend({}, defaultOptions, options);
-      // When itemValue is set, freeInput should always be false
-      if (self.objectItems)
-        self.options.freeInput = false;
-
-      makeOptionItemFunction(self.options, 'itemValue');
-      makeOptionItemFunction(self.options, 'itemText');
-      makeOptionFunction(self.options, 'tagClass');
-
-      // Typeahead Bootstrap version 2.3.2
-      if (self.options.typeahead) {
-        var typeahead = self.options.typeahead || {};
-
-        makeOptionFunction(typeahead, 'source');
-
-        self.$input.typeahead($.extend({}, typeahead, {
-          source: function (query, process) {
-            function processItems(items) {
-              var texts = [];
-
-              for (var i = 0; i < items.length; i++) {
-                var text = self.options.itemText(items[i]);
-                map[text] = items[i];
-                texts.push(text);
-              }
-              process(texts);
-            }
-
-            this.map = {};
-            var map = this.map,
-                data = typeahead.source(query);
-
-            if ($.isFunction(data.success)) {
-              // support for Angular callbacks
-              data.success(processItems);
-            } else if ($.isFunction(data.then)) {
-              // support for Angular promises
-              data.then(processItems);
-            } else {
-              // support for functions and jquery promises
-              $.when(data)
-               .then(processItems);
-            }
-          },
-          updater: function (text) {
-            self.add(this.map[text]);
-            return this.map[text];
-          },
-          matcher: function (text) {
-            return (text.toLowerCase().indexOf(this.query.trim().toLowerCase()) !== -1);
-          },
-          sorter: function (texts) {
-            return texts.sort();
-          },
-          highlighter: function (text) {
-            var regex = new RegExp( '(' + this.query + ')', 'gi' );
-            return text.replace( regex, "<strong>$1</strong>" );
-          }
-        }));
-      }
-
-      // typeahead.js
-      if (self.options.typeaheadjs) {
-        // Determine if main configurations were passed or simply a dataset
-        var typeaheadjs = self.options.typeaheadjs;
-        if (!$.isArray(typeaheadjs)) {
-            typeaheadjs = [null, typeaheadjs];
-        }
-
-        $.fn.typeahead.apply(self.$input, typeaheadjs).on('typeahead:selected', $.proxy(function (obj, datum, name) {
-          var index = 0;
-          typeaheadjs.some(function(dataset, _index) {
-            if (dataset.name === name) {
-              index = _index;
-              return true;
-            }
-            return false;
-          });
-
-          // @TODO Dep: https://github.com/corejavascript/typeahead.js/issues/89
-          if (typeaheadjs[index].valueKey) {
-            self.add(datum[typeaheadjs[index].valueKey]);
-          } else {
-            self.add(datum);
-          }
-
-          self.$input.typeahead('val', '');
-        }, self));
-      }
-
-      self.$container.on('click', $.proxy(function(event) {
-        if (! self.$element.attr('disabled')) {
-          self.$input.removeAttr('disabled');
-        }
-        self.$input.focus();
-      }, self));
-
-        if (self.options.addOnBlur && self.options.freeInput) {
-          self.$input.on('focusout', $.proxy(function(event) {
-              // HACK: only process on focusout when no typeahead opened, to
-              //       avoid adding the typeahead text as tag
-              if ($('.typeahead, .twitter-typeahead', self.$container).length === 0) {
-                self.add(self.$input.val());
-                self.$input.val('');
-              }
-          }, self));
-        }
-
-      // Toggle the 'focus' css class on the container when it has focus
-      self.$container.on({
-        focusin: function() {
-          self.$container.addClass(self.options.focusClass);
-        },
-        focusout: function() {
-          self.$container.removeClass(self.options.focusClass);
-        },
-      });
-
-      self.$container.on('keydown', 'input', $.proxy(function(event) {
-        var $input = $(event.target),
-            $inputWrapper = self.findInputWrapper();
-
-        if (self.$element.attr('disabled')) {
-          self.$input.attr('disabled', 'disabled');
-          return;
-        }
-
-        switch (event.which) {
-          // BACKSPACE
-          case 8:
-            if (doGetCaretPosition($input[0]) === 0) {
-              var prev = $inputWrapper.prev();
-              if (prev.length) {
-                if (self.options.editOnBackspace === true) {
-                  $input.val(prev.data('item'));
-                }
-                self.remove(prev.data('item'));
-              }
-            }
-            break;
-
-          // DELETE
-          case 46:
-            if (doGetCaretPosition($input[0]) === 0) {
-              var next = $inputWrapper.next();
-              if (next.length) {
-                self.remove(next.data('item'));
-              }
-            }
-            break;
-
-          // LEFT ARROW
-          case 37:
-            // Try to move the input before the previous tag
-            var $prevTag = $inputWrapper.prev();
-            if ($input.val().length === 0 && $prevTag[0]) {
-              $prevTag.before($inputWrapper);
-              $input.focus();
-            }
-            break;
-          // RIGHT ARROW
-          case 39:
-            // Try to move the input after the next tag
-            var $nextTag = $inputWrapper.next();
-            if ($input.val().length === 0 && $nextTag[0]) {
-              $nextTag.after($inputWrapper);
-              $input.focus();
-            }
-            break;
-         default:
-             // ignore
-         }
-
-        // Reset internal input's size
-        var textLength = $input.val().length,
-            wordSpace = Math.ceil(textLength / 5),
-            size = textLength + wordSpace + 1;
-        $input.attr('size', Math.max(this.inputSize, size));
-      }, self));
-
-      self.$container.on('keypress', 'input', $.proxy(function(event) {
-         var $input = $(event.target);
-
-         if (self.$element.attr('disabled')) {
-            self.$input.attr('disabled', 'disabled');
-            return;
-         }
-
-         var text = $input.val(),
-         maxLengthReached = self.options.maxChars && text.length >= self.options.maxChars;
-         if (self.options.freeInput && (keyCombinationInList(event, self.options.confirmKeys) || maxLengthReached)) {
-            // Only attempt to add a tag if there is data in the field
-            if (text.length !== 0) {
-               self.add(maxLengthReached ? text.substr(0, self.options.maxChars) : text);
-               $input.val('');
-            }
-
-            // If the field is empty, let the event triggered fire as usual
-            if (self.options.cancelConfirmKeysOnEmpty === false) {
-                event.preventDefault();
-            }
-         }
-
-         // Reset internal input's size
-         var textLength = $input.val().length,
-            wordSpace = Math.ceil(textLength / 5),
-            size = textLength + wordSpace + 1;
-         $input.attr('size', Math.max(this.inputSize, size));
-      }, self));
-
-      // Remove icon clicked
-      self.$container.on('click', '[data-role=remove]', $.proxy(function(event) {
-        if (self.$element.attr('disabled')) {
-          return;
-        }
-        self.remove($(event.target).closest('.badge').data('item'));
-      }, self));
-
-      // Only add existing value as tags when using strings as tags
-      if (self.options.itemValue === defaultOptions.itemValue) {
-        if (self.$element[0].tagName === 'INPUT') {
-            self.add(self.$element.val());
-        } else {
-          $('option', self.$element).each(function() {
-            self.add($(this).attr('value'), true);
-          });
-        }
-      }
-    },
-
-    /**
-     * Removes all tagsinput behaviour and unregsiter all event handlers
-     */
-    destroy: function() {
-      var self = this;
-
-      // Unbind events
-      self.$container.off('keypress', 'input');
-      self.$container.off('click', '[role=remove]');
-
-      self.$container.remove();
-      self.$element.removeData('tagsinput');
-      self.$element.show();
-    },
-
-    /**
-     * Sets focus on the tagsinput
-     */
-    focus: function() {
-      this.$input.focus();
-    },
-
-    /**
-     * Returns the internal input element
-     */
-    input: function() {
-      return this.$input;
-    },
-
-    /**
-     * Returns the element which is wrapped around the internal input. This
-     * is normally the $container, but typeahead.js moves the $input element.
-     */
-    findInputWrapper: function() {
-      var elt = this.$input[0],
-          container = this.$container[0];
-      while(elt && elt.parentNode !== container)
-        elt = elt.parentNode;
-
-      return $(elt);
+  /** Suggestion buttons: fill the input with the question and send it. */
+  ask(question: string): void {
+    this.draft = question;
+    this.send();
+  }
+
+  clearChat(): void {
+    this.messages.set([this.greeting()]);
+    this.draft = '';
+  }
+
+  // ─── Input handlers ───────────────────────────────────────────────────
+  onKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      this.send();
     }
-  };
+  }
 
-  /**
-   * Register JQuery plugin
-   */
-  $.fn.tagsinput = function(arg1, arg2, arg3) {
-    var results = [];
+  autoGrow(event: Event): void {
+    const el = event.target as HTMLTextAreaElement;
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 110) + 'px';
+  }
 
-    this.each(function() {
-      var tagsinput = $(this).data('tagsinput');
-      // Initialize a new tags input
-      if (!tagsinput) {
-          tagsinput = new TagsInput(this, arg1);
-          $(this).data('tagsinput', tagsinput);
-          results.push(tagsinput);
+  // ─── Voice input (Web Speech API, optional / feature-detected) ─────────
+  toggleMic(): void {
+    const w = window as any;
+    const SR = w.SpeechRecognition || w.webkitSpeechRecognition;
+    if (!SR) {
+      this.botSay(
+        "🎤 La reconnaissance vocale n'est pas supportée par ce navigateur. " +
+          'Utilisez Google Chrome ou Edge, ou tapez votre message.',
+      );
+      return;
+    }
 
-          if (this.tagName === 'SELECT') {
-              $('option', $(this)).attr('selected', 'selected');
-          }
+    // Already recording → stop it.
+    if (this.recording()) {
+      try {
+        this.recognition?.stop();
+      } catch {
+        /* ignore */
+      }
+      this.recording.set(false);
+      return;
+    }
 
-          // Init tags from $(this).val()
-          $(this).val($(this).val());
-      } else if (!arg1 && !arg2) {
-          // tagsinput already exists
-          // no function, trying to init
-          results.push(tagsinput);
-      } else if(tagsinput[arg1] !== undefined) {
-          // Invoke function on existing tags input
-            if(tagsinput[arg1].length === 3 && arg3 !== undefined){
-               var retVal = tagsinput[arg1](arg2, null, arg3);
-            }else{
-               var retVal = tagsinput[arg1](arg2);
-            }
-          if (retVal !== undefined)
-              results.push(retVal);
+    const rec = new SR();
+    this.recognition = rec;
+    rec.lang = 'fr-FR';
+    rec.continuous = true; // reste actif jusqu'au clic d'arrêt
+    rec.interimResults = true;
+    rec.maxAlternatives = 1;
+
+    let finalText = '';
+    let gotAnything = false;
+
+    rec.onstart = () => console.log('[mic] start');
+    rec.onaudiostart = () => console.log('[mic] audiostart (micro capte de l audio)');
+    rec.onspeechstart = () => console.log('[mic] speechstart (voix detectee)');
+    rec.onresult = (e: any) => {
+      gotAnything = true;
+      let interim = '';
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const t = e.results[i][0].transcript;
+        if (e.results[i].isFinal) {
+          finalText += t + ' ';
+        } else {
+          interim += t;
+        }
+      }
+      console.log('[mic] result =>', (finalText + interim).trim());
+      this.zone.run(() => {
+        this.draft = (finalText + interim).trim();
+      });
+    };
+    rec.onerror = (e: any) =>
+      this.zone.run(() => {
+        console.error('[mic] error =>', e?.error);
+        this.recording.set(false);
+        const code = e?.error ?? 'inconnue';
+        this.botSay(
+          code === 'not-allowed' || code === 'service-not-allowed'
+            ? "🎤 Accès au micro refusé. Clique sur l'icône caméra/micro dans la barre d'adresse, autorise le micro, et ouvre l'app via http://localhost."
+            : code === 'no-speech'
+              ? "🎤 Je n'ai rien entendu. Vérifie que le bon micro est actif et parle plus fort."
+              : `🎤 Erreur micro : ${code}. Réessaie ou tape ton message.`,
+        );
+      });
+    rec.onend = () =>
+      this.zone.run(() => {
+        console.log('[mic] end (gotAnything=' + gotAnything + ')');
+        this.recording.set(false);
+        if (!gotAnything) {
+          this.botSay(
+            "🎤 Micro arrêté — rien capté. Vérifie l'autorisation micro (icône dans la barre d'adresse) et que ton micro système fonctionne.",
+          );
+        }
+      });
+
+    try {
+      this.recording.set(true);
+      rec.start();
+      this.botSay("🎤 J'écoute… parle, puis reclique le micro pour arrêter.");
+    } catch (err) {
+      console.error('[mic] start failed', err);
+      this.recording.set(false);
+      this.botSay('🎤 Impossible de démarrer le micro. Réessaie.');
+    }
+  }
+
+  private botSay(text: string): void {
+    this.push({ sender: 'bot', text, time: this.now() });
+    this.scrollToBottom();
+  }
+
+  // ─── Helpers ──────────────────────────────────────────────────────────
+  private push(message: ChatMessage): void {
+    this.messages.update((list) => [...list, message]);
+  }
+
+  private greeting(): ChatMessage {
+    return {
+      sender: 'bot',
+      text:
+        "Bonjour ! 👋 Je suis votre assistant IA pour la gestion budgétaire familiale. " +
+        "Posez-moi vos questions sur vos revenus, charges, factures, épargne ou objectifs.",
+      time: this.now(),
+    };
+  }
+
+  private now(): string {
+    return new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  private scrollToBottom(): void {
+    setTimeout(() => {
+      const el = this.msgsContainer?.nativeElement;
+      if (el) {
+        el.scrollTop = el.scrollHeight;
       }
     });
-
-    if ( typeof arg1 == 'string') {
-      // Return the results from the invoked function calls
-      return results.length > 1 ? results : results[0];
-    } else {
-      return results;
-    }
-  };
-
-  $.fn.tagsinput.Constructor = TagsInput;
-
-  /**
-   * Most options support both a string or number as well as a function as
-   * option value. This function makes sure that the option with the given
-   * key in the given options is wrapped in a function
-   */
-  function makeOptionItemFunction(options, key) {
-    if (typeof options[key] !== 'function') {
-      var propertyName = options[key];
-      options[key] = function(item) { return item[propertyName]; };
-    }
-  }
-  function makeOptionFunction(options, key) {
-    if (typeof options[key] !== 'function') {
-      var value = options[key];
-      options[key] = function() { return value; };
-    }
-  }
-  /**
-   * HtmlEncodes the given value
-   */
-  var htmlEncodeContainer = $('<div />');
-  function htmlEncode(value) {
-    if (value) {
-      return htmlEncodeContainer.text(value).html();
-    } else {
-      return '';
-    }
   }
 
-  /**
-   * Returns the position of the caret in the given input field
-   * http://flightschool.acylt.com/devnotes/caret-position-woes/
-   */
-  function doGetCaretPosition(oField) {
-    var iCaretPos = 0;
-    if (document.selection) {
-      oField.focus ();
-      var oSel = document.selection.createRange();
-      oSel.moveStart ('character', -oField.value.length);
-      iCaretPos = oSel.text.length;
-    } else if (oField.selectionStart || oField.selectionStart == '0') {
-      iCaretPos = oField.selectionStart;
+  private loadMessages(): ChatMessage[] {
+    try {
+      const raw =
+        typeof localStorage !== 'undefined'
+          ? localStorage.getItem(AssistantComponent.STORAGE_KEY)
+          : null;
+      if (raw) {
+        const arr = JSON.parse(raw) as ChatMessage[];
+        if (Array.isArray(arr) && arr.length) {
+          return arr;
+        }
+      }
+    } catch {
+      /* ignore */
     }
-    return (iCaretPos);
+    return [this.greeting()];
   }
 
-  /**
-    * Returns boolean indicates whether user has pressed an expected key combination.
-    * @param object keyPressEvent: JavaScript event object, refer
-    *     http://www.w3.org/TR/2003/WD-DOM-Level-3-Events-20030331/ecma-script-binding.html
-    * @param object lookupList: expected key combinations, as in:
-    *     [13, {which: 188, shiftKey: true}]
-    */
-  function keyCombinationInList(keyPressEvent, lookupList) {
-      var found = false;
-      $.each(lookupList, function (index, keyCombination) {
-          if (typeof (keyCombination) === 'number' && keyPressEvent.which === keyCombination) {
-              found = true;
-              return false;
-          }
-
-          if (keyPressEvent.which === keyCombination.which) {
-              var alt = !keyCombination.hasOwnProperty('altKey') || keyPressEvent.altKey === keyCombination.altKey,
-                  shift = !keyCombination.hasOwnProperty('shiftKey') || keyPressEvent.shiftKey === keyCombination.shiftKey,
-                  ctrl = !keyCombination.hasOwnProperty('ctrlKey') || keyPressEvent.ctrlKey === keyCombination.ctrlKey;
-              if (alt && shift && ctrl) {
-                  found = true;
-                  return false;
-              }
-          }
-      });
-
-      return found;
-  }
-
-  /**
-   * Initialize tagsinput behaviour on inputs and selects which have
-   * data-role=tagsinput
-   */
-  $(function() {
-    $("input[data-role=tagsinput], select[multiple][data-role=tagsinput]").tagsinput();
-  });
-})(window.jQuery);
-
-    } catch (e) { console.warn('[assistant] inline script 1 failed', e); }
+  private saveMessages(msgs: ChatMessage[]): void {
+    try {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem(AssistantComponent.STORAGE_KEY, JSON.stringify(msgs));
+      }
+    } catch {
+      /* ignore */
+    }
   }
 }

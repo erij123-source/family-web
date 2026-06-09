@@ -215,6 +215,12 @@ export class FamilleComponent implements OnInit {
     return palette[Math.abs(key) % palette.length];
   }
 
+  /** Si l'URL de la photo est cassée (404, serveur down…), on masque l'<img>
+   *  pour laisser apparaître les initiales + le dégradé en fond. */
+  onAvatarError(ev: Event): void {
+    (ev.target as HTMLImageElement).style.display = 'none';
+  }
+
   roleLabel(role: MembreRole): string {
     switch (role) {
       case 'ADMINISTRATEUR': return 'Administrateur';
@@ -530,6 +536,13 @@ export class FamilleComponent implements OnInit {
     // sur /users/upload-photo/{userId} APRÈS la mise à jour du profil. Échec
     // d'upload = warning (le reste a été sauvegardé) — n'annule pas le succès.
     const file = this.draft.photoFile;
+    // L'avatar du header (main-layout) + le modal Profil lisent
+    // session.avatarDataUrl (dataURL local par utilisateur), pas la photo
+    // serveur. Donc quand l'admin modifie SA PROPRE photo ici, on synchronise
+    // cette clé locale sinon l'icône en haut à droite ne change pas.
+    const editingSelf =
+      this.editingUserId != null &&
+      this.editingUserId === this.session.snapshot?.userId;
     const finish = () => {
       this.saving = false;
       this.modalOpen = false;
@@ -539,7 +552,12 @@ export class FamilleComponent implements OnInit {
     };
     if (file && this.editingUserId != null) {
       this.famille.uploadUserPhoto(this.editingUserId, file).subscribe({
-        next: () => finish(),
+        next: () => {
+          if (editingSelf && this.draft.photoPreview) {
+            this.session.update({ avatarDataUrl: this.draft.photoPreview });
+          }
+          finish();
+        },
         error: (err) => {
           console.error('[Famille] photo upload failed', err);
           this.showToast('Profil enregistré, mais l\'upload de la photo a échoué.', 'warning');
@@ -547,6 +565,11 @@ export class FamilleComponent implements OnInit {
         },
       });
       return;
+    }
+    // Pas de nouveau fichier : si l'admin vient de retirer SA propre photo,
+    // on vide aussi l'avatar du header pour rester cohérent.
+    if (editingSelf && !this.draft.photoPreview && !this.draft.photoUrl) {
+      this.session.update({ avatarDataUrl: undefined });
     }
     finish();
   }

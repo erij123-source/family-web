@@ -161,6 +161,29 @@ export class AuthService {
       );
   }
 
+  // ─── Avatar sync ──────────────────────────────────────────────────────
+  /**
+   * Re-lit l'utilisateur courant côté serveur et resynchronise l'avatar du
+   * header (session.avatarDataUrl) sur `User.photo`. Appelé au chargement du
+   * shell authentifié : un simple refresh web reflète ainsi une photo changée
+   * ailleurs (mobile, page Famille). On ne touche à rien si la session est
+   * absente, et on n'écrase PAS un avatar local par du vide quand le serveur
+   * n'a pas (encore) de photo.
+   */
+  syncAvatarFromServer(): void {
+    const current = this.session.snapshot;
+    if (!current?.username) return;
+    this.getUserByUsername(current.username).subscribe({
+      next: (user) => {
+        const serverPhoto = user.photo || undefined;
+        if (serverPhoto && serverPhoto !== current.avatarDataUrl) {
+          this.session.update({ avatarDataUrl: serverPhoto });
+        }
+      },
+      error: () => { /* silencieux : on garde l'avatar courant */ },
+    });
+  }
+
   // ─── Logout ───────────────────────────────────────────────────────────
   logout(): Observable<void> {
     const username = this.session.snapshot?.username;
@@ -190,12 +213,15 @@ export class AuthService {
             familleName: (membre?.famille as { name?: string } | undefined)?.name,
             membreId: membre?.id,
             role: membre?.role,
-            // Restore the previously-uploaded avatar for this userId if we
-            // still have it on this device — otherwise it stays undefined
-            // and the header falls back to initials.
-            avatarDataUrl: typeof localStorage !== 'undefined'
-              ? localStorage.getItem(`avatar_${user.id}`) ?? undefined
-              : undefined,
+            // La photo serveur (User.photo) fait foi : modifiée sur le mobile
+            // OU via la page Famille, elle doit apparaître dans le header web.
+            // À défaut (aucune photo serveur), on retombe sur l'avatar local
+            // de cet appareil (data URL choisie dans le modal Profil), sinon
+            // les initiales.
+            avatarDataUrl: user.photo
+              || (typeof localStorage !== 'undefined'
+                ? localStorage.getItem(`avatar_${user.id}`) ?? undefined
+                : undefined),
           })),
         ),
       ),

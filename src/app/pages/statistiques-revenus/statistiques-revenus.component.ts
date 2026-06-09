@@ -120,8 +120,8 @@ export class StatistiquesRevenusComponent implements AfterViewInit {
     this.loading = true;
     forkJoin({
       monthly:    this.stats.revenusMonthly(12, false, this.toAnchor('line')),
-      byCategory: this.stats.revenusByCategory(12, this.toAnchor('cat')),
-      byMember:   this.stats.revenusByMember(12, this.toAnchor('mem')),
+      byCategory: this.stats.revenusByCategory(1, this.toAnchor('cat')),   // selected month only
+      byMember:   this.stats.revenusByMember(1, this.toAnchor('mem')),     // selected month only
     }).subscribe({
       next: ({ monthly, byCategory, byMember }) => {
         this.updateAreaChart(monthly);
@@ -144,12 +144,12 @@ export class StatistiquesRevenusComponent implements AfterViewInit {
         error: (e) => console.error('[stats-revenus] line refresh failed', e),
       });
     } else if (scope === 'cat') {
-      this.stats.revenusByCategory(12, anchor).subscribe({
+      this.stats.revenusByCategory(1, anchor).subscribe({
         next: (r) => this.updateCategoriesDonut(r),
         error: (e) => console.error('[stats-revenus] cat refresh failed', e),
       });
     } else if (scope === 'mem') {
-      this.stats.revenusByMember(12, anchor).subscribe({
+      this.stats.revenusByMember(1, anchor).subscribe({
         next: (r) => this.updateMembersPie(r),
         error: (e) => console.error('[stats-revenus] mem refresh failed', e),
       });
@@ -202,6 +202,7 @@ export class StatistiquesRevenusComponent implements AfterViewInit {
       series: [] as number[],
       chart: { foreColor: '#9ba7b2', height: 360, type: 'donut' },
       labels: [] as string[],
+      dataLabels: { enabled: true, formatter: (v: number) => Math.round(v) + '%' },
       fill: {
         type: 'gradient',
         gradient: { shade: 'dark',
@@ -209,7 +210,7 @@ export class StatistiquesRevenusComponent implements AfterViewInit {
           shadeIntensity: 1, type: 'vertical', opacityFrom: 1, opacityTo: 1 },
       },
       colors: ['#ff6a00', '#98ec2d', '#3494e6', '#005bea', '#ff0080', '#0891b2', '#7c3aed'],
-      legend: { position: 'bottom', show: true },
+      legend: { position: 'bottom', show: true, onItemClick: { toggleDataSeries: false } },
       tooltip: { theme: 'dark', y: { formatter: (v: number) => v.toLocaleString('fr') + ' DT' } },
       responsive: [{ breakpoint: 480, options: { chart: { width: 200 }, legend: { position: 'bottom' } } }],
     };
@@ -224,6 +225,7 @@ export class StatistiquesRevenusComponent implements AfterViewInit {
       series: [] as number[],
       chart: { foreColor: '#9ba7b2', height: 360, type: 'pie' },
       labels: [] as string[],
+      dataLabels: { enabled: true, formatter: (v: number) => Math.round(v) + '%' },
       fill: {
         type: 'gradient',
         gradient: { shade: 'dark',
@@ -231,7 +233,7 @@ export class StatistiquesRevenusComponent implements AfterViewInit {
           shadeIntensity: 1, type: 'vertical', opacityFrom: 1, opacityTo: 1 },
       },
       colors: ['#ff6a00', '#98ec2d', '#3494e6', '#005bea'],
-      legend: { position: 'bottom', show: true },
+      legend: { position: 'bottom', show: true, onItemClick: { toggleDataSeries: false } },
       tooltip: { theme: 'dark', y: { formatter: (v: number) => v.toLocaleString('fr') + ' DT' } },
       responsive: [{ breakpoint: 480, options: { chart: { width: 200 }, legend: { position: 'bottom' } } }],
     };
@@ -259,8 +261,8 @@ export class StatistiquesRevenusComponent implements AfterViewInit {
       } catch (e) { console.warn('[stats-revenus] area empty refresh failed', e); }
       return;
     }
-    let running = 0;
-    const data = rows.map((r) => (running += (r.total || 0)));
+    // Valeur propre de chaque mois (pas de cumul) : juin = revenus de juin.
+    const data = rows.map((r) => r.total || 0);
     const yMax = this.niceCeil(Math.max(0, ...data));
     try {
       this.areaChart.updateOptions({
@@ -291,61 +293,84 @@ export class StatistiquesRevenusComponent implements AfterViewInit {
     return nice * exp;
   }
 
+  // Distinct palette — one clearly different hue per category, so 8+ slices
+  // stay visually separable (no two adjacent blues blending into one).
+  private readonly sliceColors = [
+    '#ff6a00', '#22c55e', '#3494e6', '#ff0080', '#7c3aed',
+    '#0891b2', '#facc15', '#ef4444', '#14b8a6', '#a855f7',
+  ];
+  private readonly sliceGradient = [
+    '#ee0979', '#16a34a', '#1d4ed8', '#db2777', '#6d28d9',
+    '#0e7490', '#ca8a04', '#b91c1c', '#0f766e', '#7e22ce',
+  ];
+
   private updateCategoriesDonut(rows: PieSlice[]): void {
     if (!this.categoriesChart) return;
     const isFuture = this.isFutureAnchor('cat');
-    const total = isFuture ? 0 : rows.reduce((s, r) => s + (r.value || 0), 0);
+    // One slice per revenue name present in the month's list — nothing merged
+    // into "Autres". Sorted largest-first so the legend reads top-down.
+    const slices = isFuture
+      ? []
+      : [...rows].filter((r) => (r.value || 0) > 0).sort((a, b) => (b.value || 0) - (a.value || 0));
+    const total = slices.reduce((s, r) => s + (r.value || 0), 0);
     if (total <= 0) {
-      try { this.categoriesChart.updateOptions(emptyPieOptions(false)); }
-      catch (e) { console.warn('[stats-revenus] categories empty refresh failed', e); }
+      try {
+        this.categoriesChart.updateOptions(emptyPieOptions(true));
+        this.categoriesChart.updateSeries([1], true);
+      } catch (e) { console.warn('[stats-revenus] categories empty refresh failed', e); }
       return;
     }
     try {
+      // Labels + styling via updateOptions (default redraw → the legend
+      // re-syncs to the new labels, no stale entries), then the values via
+      // updateSeries so the slices redraw even when the count changes between
+      // months — including the empty→data first load.
       this.categoriesChart.updateOptions({
-        labels: rows.map((r) => r.label),
-        series: rows.map((r) => r.value),
-        colors: ['#ff6a00', '#98ec2d', '#3494e6', '#005bea', '#ff0080', '#0891b2', '#7c3aed'],
-        // Reset fill explicitly so the empty-state opacity-0 doesn't leak
-        // through ApexCharts' deep-merge and leave the slices invisible.
+        labels: slices.map((r) => r.label),
+        colors: this.sliceColors,
         fill: {
           type: 'gradient', opacity: 1,
-          gradient: { shade: 'dark',
-            gradientToColors: ['#ee0979', '#17ad37', '#ec6ead', '#00c6fb'],
+          gradient: { shade: 'dark', gradientToColors: this.sliceGradient,
             shadeIntensity: 1, type: 'vertical', opacityFrom: 1, opacityTo: 1 },
         },
-        dataLabels: { enabled: true },
-        legend: { position: 'bottom', show: true },
+        dataLabels: { enabled: true, formatter: (v: number) => Math.round(v) + '%' },
+        legend: { position: 'bottom', show: true, onItemClick: { toggleDataSeries: false } },
         tooltip: { enabled: true, theme: 'dark', y: { formatter: (v: number) => v.toLocaleString('fr') + ' DT' } },
         stroke: { show: true, width: 2, colors: ['#ffffff'] },
       });
+      this.categoriesChart.updateSeries(slices.map((r) => r.value), true);
     } catch (e) { console.warn('[stats-revenus] categories refresh failed', e); }
   }
 
   private updateMembersPie(rows: PieSlice[]): void {
     if (!this.membersChart) return;
     const isFuture = this.isFutureAnchor('mem');
-    const total = isFuture ? 0 : rows.reduce((s, r) => s + (r.value || 0), 0);
+    const slices = isFuture
+      ? []
+      : [...rows].filter((r) => (r.value || 0) > 0).sort((a, b) => (b.value || 0) - (a.value || 0));
+    const total = slices.reduce((s, r) => s + (r.value || 0), 0);
     if (total <= 0) {
-      try { this.membersChart.updateOptions(emptyPieOptions(false)); }
-      catch (e) { console.warn('[stats-revenus] members empty refresh failed', e); }
+      try {
+        this.membersChart.updateOptions(emptyPieOptions(false));
+        this.membersChart.updateSeries([1], true);
+      } catch (e) { console.warn('[stats-revenus] members empty refresh failed', e); }
       return;
     }
     try {
       this.membersChart.updateOptions({
-        labels: rows.map((r) => r.label),
-        series: rows.map((r) => r.value),
-        colors: ['#ff6a00', '#98ec2d', '#3494e6', '#005bea'],
+        labels: slices.map((r) => r.label),
+        colors: this.sliceColors,
         fill: {
           type: 'gradient', opacity: 1,
-          gradient: { shade: 'dark',
-            gradientToColors: ['#ee0979', '#17ad37', '#ec6ead', '#00c6fb'],
+          gradient: { shade: 'dark', gradientToColors: this.sliceGradient,
             shadeIntensity: 1, type: 'vertical', opacityFrom: 1, opacityTo: 1 },
         },
-        dataLabels: { enabled: true },
-        legend: { position: 'bottom', show: true },
+        dataLabels: { enabled: true, formatter: (v: number) => Math.round(v) + '%' },
+        legend: { position: 'bottom', show: true, onItemClick: { toggleDataSeries: false } },
         tooltip: { enabled: true, theme: 'dark', y: { formatter: (v: number) => v.toLocaleString('fr') + ' DT' } },
         stroke: { show: true, width: 2, colors: ['#ffffff'] },
       });
+      this.membersChart.updateSeries(slices.map((r) => r.value), true);
     } catch (e) { console.warn('[stats-revenus] members refresh failed', e); }
   }
 }
