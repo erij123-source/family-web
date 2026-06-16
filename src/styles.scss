@@ -2,6 +2,24 @@
 html, body { margin: 0; padding: 0; }
 
 /* ──────────────────────────────────────────────────────────────────────
+   Masquer l'œil NATIF du navigateur sur les champs mot de passe
+   (Edge/IE `::-ms-reveal`/`::-ms-clear` et le bouton WebKit). C'est le
+   "1er œil" qui apparaissait en double à côté du toggle de l'app — on ne
+   garde que le toggle custom (btn-eye). S'applique partout : auth,
+   ajouter un membre, et tout <input type="password">.
+   ────────────────────────────────────────────────────────────────────── */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none !important;
+}
+input[type="password"]::-webkit-credentials-auto-fill-button,
+input[type="password"]::-webkit-strong-password-auto-fill-button {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* ──────────────────────────────────────────────────────────────────────
    Auth pages — overrides de thème pour l'intérieur du panneau
    (login / register / register-step2 / forgot / reset).
 
